@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arcana · Lectura de Tarot</title>
+<meta name="description" content="Lecturas de tarot interpretadas con inteligencia artificial. Elige tu tirada, formula tu pregunta y deja que hablen los arcanos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0a1a; --bg2:#141230; --ink:#efe6d2; --muted:#a79fc0; --gold:#d8b46a; --gold2:#f3d99b;
+  --violet:#6b4fb3; --card-w:84px; --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  font-family:"Cormorant Garamond",Georgia,serif; font-size:19px; line-height:1.55; color:var(--ink);
+  background:radial-gradient(1200px 700px at 50% -10%, #2a1f5c 0%, transparent 60%),
+             radial-gradient(900px 600px at 100% 100%, #1d1440 0%, transparent 60%), var(--bg);
+  background-attachment:fixed; overflow-x:hidden;
+}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:18px 18px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 10px}
+.logo{font-family:Cinzel,serif;letter-spacing:.18em;font-size:20px;color:var(--gold2);cursor:pointer;display:flex;align-items:center;gap:10px}
+.logo .moon{font-size:22px}
+.navbtn{background:none;border:1px solid rgba(216,180,106,.35);color:var(--gold2);font-family:Cinzel,serif;font-size:12px;letter-spacing:.12em;padding:7px 12px;border-radius:30px;cursor:pointer}
+.navbtn:hover{background:rgba(216,180,106,.1)}
+h1,h2,h3{font-family:Cinzel,serif;font-weight:600;letter-spacing:.06em;color:var(--gold2)}
+.view{display:none;animation:fade .6s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{text-align:center;padding:26px 0 18px}
+.hero h1{font-size:clamp(30px,7vw,52px);letter-spacing:.14em;line-height:1.15}
+.hero p{color:var(--muted);max-width:560px;margin:12px auto 0;font-size:20px;font-style:italic}
+.divider{display:flex;align-items:center;justify-content:center;gap:12px;color:var(--gold);margin:18px 0;opacity:.8}
+.divider:before,.divider:after{content:"";height:1px;width:80px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.spreads{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:10px}
+.spread{background:linear-gradient(160deg,rgba(107,79,179,.18),rgba(20,18,48,.6));border:1px solid rgba(216,180,106,.25);border-radius:16px;padding:18px;cursor:pointer;transition:.25s;text-align:left;color:inherit;font:inherit}
+.spread:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 10px 30px rgba(107,79,179,.25)}
+.spread h3{font-size:17px;margin-bottom:4px}
+.spread .n{font-family:Cinzel,serif;font-size:12px;color:var(--gold);letter-spacing:.15em}
+.spread p{color:var(--muted);font-size:17px;margin-top:6px}
+.panel{background:rgba(20,18,48,.72);border:1px solid rgba(216,180,106,.22);border-radius:18px;padding:22px;backdrop-filter:blur(6px);max-width:640px;margin:20px auto}
+.panel h2{font-size:22px;text-align:center}
+.panel .sub{text-align:center;color:var(--muted);font-style:italic;margin:4px 0 16px}
+textarea{width:100%;min-height:96px;resize:vertical;background:rgba(11,10,26,.7);border:1px solid rgba(216,180,106,.3);border-radius:12px;color:var(--ink);font:inherit;padding:12px 14px;outline:none}
+textarea:focus{border-color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{background:rgba(107,79,179,.22);border:1px solid rgba(167,159,192,.3);color:var(--ink);border-radius:20px;padding:5px 12px;font:inherit;font-size:16px;cursor:pointer}
+.chip:hover{border-color:var(--gold)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
+label.toggle{display:flex;align-items:center;gap:10px;color:var(--muted);cursor:pointer;font-size:17px}
+label.toggle input{accent-color:var(--gold);width:18px;height:18px}
+.btn{font-family:Cinzel,serif;letter-spacing:.14em;font-size:14px;background:linear-gradient(180deg,#e7c77f,#b98d3e);color:#1b1430;border:none;border-radius:40px;padding:13px 26px;cursor:pointer;font-weight:700;box-shadow:0 6px 22px rgba(216,180,106,.25);transition:.2s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(216,180,106,.4)}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.btn.ghost{background:none;color:var(--gold2);border:1px solid rgba(216,180,106,.45);box-shadow:none}
+.center{text-align:center}
+/* barajar */
+.ritual{text-align:center;padding:50px 0}
+.deck{position:relative;width:120px;height:200px;margin:0 auto 30px}
+.deck .c{position:absolute;inset:0;border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 25px rgba(0,0,0,.5)}
+.deck .c:nth-child(1){animation:sh1 1.1s ease-in-out infinite}
+.deck .c:nth-child(2){animation:sh2 1.1s ease-in-out infinite}
+.deck .c:nth-child(3){animation:sh3 1.1s ease-in-out infinite}
+@keyframes sh1{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(-70px) rotate(-12deg)}}
+@keyframes sh2{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(70px) rotate(12deg)}}
+@keyframes sh3{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.breath{font-size:22px;font-style:italic;color:var(--gold2);animation:breath 3s ease-in-out infinite}
+@keyframes breath{0%,100%{opacity:.45}50%{opacity:1}}
+/* elegir */
+.pickhead{text-align:center;margin:0 -18px 12px;padding:10px 18px 4px;position:sticky;top:0;z-index:5;background:linear-gradient(180deg,rgba(11,10,26,.97) 80%,rgba(11,10,26,0))}
+.pickhead h2{font-size:22px}
+.pickhead .count{color:var(--muted);font-style:italic}
+.slots{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+.slot{width:34px;height:56px;border:1px dashed rgba(216,180,106,.45);border-radius:6px;transition:.3s;overflow:hidden}
+.slot.full{border-style:solid;border-color:var(--gold);box-shadow:0 0 12px rgba(216,180,106,.4)}
+.slot svg{width:100%;height:100%;display:block}
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px;max-width:860px;margin:0 auto}
+.pick{aspect-ratio:3/5;border-radius:7px;overflow:hidden;cursor:pointer;transition:transform .25s, opacity .4s, box-shadow .25s;box-shadow:0 3px 10px rgba(0,0,0,.45);animation:deal .5s ease backwards}
+.pick svg{width:100%;height:100%;display:block}
+.pick:hover{transform:translateY(-6px);box-shadow:0 8px 20px rgba(216,180,106,.35)}
+.pick.taken{opacity:0;transform:scale(.6) translateY(-30px);pointer-events:none}
+@keyframes deal{from{opacity:0;transform:translateY(20px) scale(.9)}}
+/* lectura */
+.question{text-align:center;font-style:italic;color:var(--muted);margin:6px auto 4px;max-width:640px;font-size:20px}
+.layout{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:18px auto 8px;max-width:900px}
+.pos{display:flex;flex-direction:column;align-items:center;width:calc(var(--card-w) + 22px)}
+.pos .lbl{font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.1em;color:var(--gold);text-align:center;margin-top:7px;line-height:1.25;min-height:26px}
+.card{width:var(--card-w);aspect-ratio:3/5;perspective:900px;cursor:pointer}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .9s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.card .face svg{width:100%;height:100%;display:block}
+.card .front{transform:rotateY(180deg)}
+.card.rev .front svg{transform:rotate(180deg)}
+.card.flip .face.front{box-shadow:0 0 0 1px rgba(216,180,106,.5),0 0 26px rgba(216,180,106,.25)}
+/* cruz celta */
+.celtic{display:grid;grid-template-columns:repeat(4,auto);grid-template-rows:repeat(4,auto);gap:8px 12px;justify-content:center;margin:18px auto}
+.celtic .pos{width:calc(var(--card-w) + 10px)}
+.celtic .p1{grid-column:2;grid-row:2;position:relative}
+.celtic .p2{grid-column:2;grid-row:2;z-index:2;align-self:start;justify-self:center;pointer-events:none}
+.celtic .p2 .card{pointer-events:auto}
+.celtic .p2 .card{transform:rotate(90deg) scale(.82) translateX(34%)}
+.celtic .p2 .lbl{visibility:hidden}
+.celtic .p3{grid-column:2;grid-row:3}
+.celtic .p4{grid-column:1;grid-row:2}
+.celtic .p5{grid-column:2;grid-row:1}
+.celtic .p6{grid-column:3;grid-row:2}
+.celtic .p7{grid-column:4;grid-row:4}
+.celtic .p8{grid-column:4;grid-row:3}
+.celtic .p9{grid-column:4;grid-row:2}
+.celtic .p10{grid-column:4;grid-row:1}
+.legend{max-width:640px;margin:0 auto;color:var(--muted);font-size:16px;text-align:center}
+.reading{max-width:700px;margin:22px auto 0;background:rgba(20,18,48,.72);border:1px solid rgba(216,180,106,.22);border-radius:18px;padding:24px 22px;min-height:120px}
+.reading h3{font-size:16.5px;margin:22px 0 6px;color:var(--gold2)}
+.reading h3:first-child{margin-top:0}
+.reading p{margin:0 0 12px}
+.reading strong{color:var(--gold2);font-weight:600}
+.reading .cursor{display:inline-block;width:8px;height:18px;background:var(--gold);vertical-align:-3px;animation:breath 1s infinite;margin-left:2px}
+.loading{text-align:center;color:var(--muted);font-style:italic;padding:20px 0}
+.loading .orb{width:46px;height:46px;border-radius:50%;margin:0 auto 12px;background:radial-gradient(circle at 35% 35%,#fff7d6,#d8b46a 35%,#6b4fb3 75%,transparent 76%);animation:pulse 2s ease-in-out infinite;box-shadow:0 0 30px rgba(216,180,106,.5)}
+@keyframes pulse{0%,100%{transform:scale(.85);opacity:.7}50%{transform:scale(1.05);opacity:1}}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:22px 0 0}
+.note{font-size:15px;color:var(--muted);text-align:center;margin-top:10px;font-style:italic}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(5,4,14,.82);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;backdrop-filter:blur(4px)}
+.modal.on{display:flex;animation:fade .3s}
+.mbox{background:linear-gradient(170deg,#1c1840,#100e26);border:1px solid rgba(216,180,106,.35);border-radius:18px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:22px;text-align:center;position:relative}
+.mbox .big{width:150px;margin:0 auto 14px;border-radius:10px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.mbox .big svg{width:100%;display:block}
+.mbox .big.rev svg{transform:rotate(180deg)}
+.mbox h3{font-size:20px}
+.mbox .pl{font-family:Cinzel,serif;font-size:12px;letter-spacing:.14em;color:var(--gold)}
+.mbox .kw{color:var(--muted);font-style:italic;margin:6px 0 10px}
+.mbox .mean{text-align:left}
+.mbox .mean b{font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em;color:var(--gold);font-weight:600;display:block;margin-top:10px}
+.mbox .close{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--muted);font-size:28px;cursor:pointer;line-height:1}
+.hist{list-style:none;text-align:left;margin-top:10px}
+.hist li{border-top:1px solid rgba(216,180,106,.15);padding:10px 0;cursor:pointer}
+.hist li:hover{color:var(--gold2)}
+.hist small{color:var(--muted);display:block}
+footer{text-align:center;color:var(--muted);font-size:14.5px;margin-top:40px;font-style:italic;opacity:.8;max-width:600px;margin-left:auto;margin-right:auto}
+.me{border:1px solid rgba(216,180,106,.22);border-radius:12px;padding:12px 14px;margin-bottom:14px;background:rgba(107,79,179,.12)}
+.me .ttl{font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.14em;color:var(--gold)}
+.me .fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.me input{width:100%;background:rgba(11,10,26,.7);border:1px solid rgba(216,180,106,.3);border-radius:10px;color:var(--ink);font:inherit;font-size:17px;padding:8px 10px;outline:none;color-scheme:dark}
+.me input:focus{border-color:var(--gold)}
+.me .info{color:var(--gold2);font-style:italic;margin-top:6px;font-size:17px;min-height:4px}
+.me .priv{font-size:14px;color:var(--muted);margin-top:4px}
+.link{background:none;border:none;color:var(--gold);text-decoration:underline;font:inherit;font-size:15px;cursor:pointer;padding:0;margin-top:4px}
+@media (max-width:420px){.me .fields{grid-template-columns:1fr}}
+.natalcard{background:linear-gradient(160deg,rgba(216,180,106,.16),rgba(20,18,48,.6))}
+.fieldl{display:block;font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.12em;color:var(--gold);margin:12px 0 5px}
+.inp{width:100%;background:rgba(11,10,26,.7);border:1px solid rgba(216,180,106,.3);border-radius:10px;color:var(--ink);font:inherit;font-size:18px;padding:9px 11px;outline:none;color-scheme:dark}
+.inp:focus{border-color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{color:#f0a0a0;font-size:16px;margin-top:10px;text-align:center;min-height:4px}
+.wheel{max-width:380px;margin:14px auto 6px}
+.wheel svg{width:100%;display:block}
+.triad{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px 0}
+.triad div{border:1px solid rgba(216,180,106,.35);border-radius:14px;padding:8px 14px;text-align:center;min-width:96px;background:rgba(107,79,179,.14)}
+.triad b{display:block;font-family:Cinzel,serif;font-size:11px;letter-spacing:.14em;color:var(--gold);font-weight:600}
+.triad span{font-size:19px;color:var(--gold2)}
+table.pl{width:100%;max-width:520px;margin:12px auto;border-collapse:collapse;font-size:17px}
+table.pl td{padding:5px 6px;border-bottom:1px solid rgba(216,180,106,.12)}
+table.pl td:first-child{color:var(--gold2);white-space:nowrap}
+table.pl td.h{color:var(--muted);text-align:right;white-space:nowrap}
+.elems{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:520px;margin:12px auto}
+.elems div{text-align:center;font-size:15px;color:var(--muted)}
+.elems .bar{height:60px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:4px}
+.elems .bar i{display:block;width:26px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--gold2),var(--violet))}
+@media (max-width:420px){.two{grid-template-columns:1fr}}
+@media print{#stars,header,.actions,footer,.note,.legend{display:none!important} body{background:#fff!important;color:#222} .reading,.panel{background:#fff!important;border:none!important;color:#222!important} h1,h2,h3,.reading h3,.reading strong,.triad span,table.pl td:first-child{color:#6b4a12!important} .view{animation:none}}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#2a2350;border:1px solid var(--gold);color:var(--ink);padding:9px 18px;border-radius:30px;z-index:60;font-size:16px;display:none}
+@media (max-width:520px){
+  :root{--card-w:70px}
+  body{font-size:18px}
+  .celtic{gap:6px 6px}
+  :root .celtic{--card-w:58px}
+  .celtic .pos .lbl{font-size:9px;min-height:22px}
+  .layout{gap:8px}
+  .slot{width:27px;height:45px}
+}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="wrap">
+  <header>
+    <div class="logo" id="goHome"><span class="moon">☾</span>ARCANA</div>
+    <button class="navbtn" id="openHist">Mis lecturas</button>
+  </header>
+
+  <!-- INICIO -->
+  <section class="view on" id="v-inicio">
+    <div class="hero">
+      <h1>ARCANA</h1>
+      <p>Setenta y ocho cartas, siglos de símbolos y una pregunta tuya. Elige una tirada y deja que los arcanos hablen.</p>
+    </div>
+    <div class="divider">✦</div>
+    <div class="spreads" id="spreads"></div>
+    <div class="divider">☉</div>
+    <div class="spreads"><button class="spread natalcard" id="goNatal"><div class="n">ASTROLOGÍA · GRATIS</div><h3>Tu carta natal</h3><p>El cielo exacto de tu nacimiento: planetas, ascendente y casas, con una interpretación completa de tu carácter, el amor y tu vocación.</p></button></div>
+  </section>
+
+  <!-- PREGUNTA -->
+  <section class="view" id="v-pregunta">
+    <div class="panel">
+      <h2 id="pTitle"></h2>
+      <p class="sub" id="pSub"></p>
+      <div class="me" id="me"></div>
+      <textarea id="q" maxlength="400" placeholder="Escribe tu pregunta… (puedes dejarla en blanco para una lectura general)"></textarea>
+      <div class="chips" id="chips"></div>
+      <div class="row">
+        <label class="toggle"><input type="checkbox" id="rev" checked> Incluir cartas invertidas</label>
+        <button class="btn" id="toShuffle">Barajar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BARAJAR -->
+  <section class="view" id="v-barajar">
+    <div class="ritual">
+      <div class="deck" id="deck"></div>
+      <p class="breath">Respira hondo y concéntrate en tu pregunta…</p>
+    </div>
+  </section>
+
+  <!-- ELEGIR -->
+  <section class="view" id="v-elegir">
+    <div class="pickhead">
+      <h2>Elige tus cartas</h2>
+      <p class="count" id="pickCount"></p>
+      <div class="slots" id="slots"></div>
+    </div>
+    <div class="pickgrid" id="pickgrid"></div>
+  </section>
+
+  <!-- LECTURA -->
+  <section class="view" id="v-lectura">
+    <div class="center"><h2 id="rTitle" style="font-size:22px"></h2></div>
+    <p class="question" id="rQ"></p>
+    <p class="legend" id="rMe"></p>
+    <div id="layout"></div>
+    <p class="legend" id="legend">Toca cualquier carta para ver su significado.</p>
+    <div class="reading" id="reading"></div>
+    <div class="actions" id="actions" style="display:none">
+      <button class="btn ghost" id="copy">Copiar lectura</button>
+      <button class="btn" id="again">Nueva lectura</button>
+    </div>
+    <p class="note" id="aiNote"></p>
+  </section>
+
+  <!-- CARTA NATAL: FORMULARIO -->
+  <section class="view" id="v-natalform">
+    <div class="panel">
+      <h2>Tu carta natal</h2>
+      <p class="sub">El cielo exacto del momento en que naciste, calculado con efemérides astronómicas.</p>
+      <label class="fieldl" for="nName">Nombre</label>
+      <input class="inp" id="nName" maxlength="40" placeholder="Tu nombre (opcional)">
+      <div class="two">
+        <div><label class="fieldl" for="nDate">Fecha de nacimiento</label><input class="inp" id="nDate" type="date" min="1900-01-01" max="2026-12-31"></div>
+        <div><label class="fieldl" for="nTime">Hora de nacimiento</label><input class="inp" id="nTime" type="time"></div>
+      </div>
+      <label class="toggle" style="margin-top:8px"><input type="checkbox" id="nNoTime"> No sé la hora</label>
+      <label class="fieldl" for="nPlace">Lugar de nacimiento</label>
+      <input class="inp" id="nPlace" list="cityList" placeholder="Empieza a escribir tu ciudad…" autocomplete="off">
+      <datalist id="cityList"></datalist>
+      <p class="note" style="text-align:left">Si tu ciudad no aparece, elige la más cercana. La hora te la da tu partida de nacimiento o el libro de familia. Tus datos se quedan en este dispositivo; a la interpretación solo llegan tu nombre y las posiciones de los planetas.</p>
+      <div class="err" id="nErr"></div>
+      <div class="center" style="margin-top:14px"><button class="btn" id="nGo">Calcular mi carta</button></div>
+    </div>
+  </section>
+
+  <!-- CARTA NATAL: RESULTADO -->
+  <section class="view" id="v-natal">
+    <div class="center"><h2 style="font-size:22px" id="nTitle">Carta natal</h2></div>
+    <p class="question" id="nSub"></p>
+    <div class="wheel" id="nWheel"></div>
+    <div class="triad" id="nTriad"></div>
+    <table class="pl" id="nTable"></table>
+    <div class="elems" id="nElems"></div>
+    <div class="reading" id="nReading"></div>
+    <div class="actions" id="nActions" style="display:none">
+      <button class="btn ghost" id="nPrint">Guardar en PDF</button>
+      <button class="btn ghost" id="nCopy">Copiar</button>
+      <button class="btn" id="nBack">Volver</button>
+    </div>
+    <p class="note" id="nNote"></p>
+  </section>
+
+  <footer>Arcana es una herramienta de reflexión y entretenimiento. Las cartas no deciden por ti: ninguna lectura sustituye el consejo de un profesional en temas de salud, dinero o asuntos legales.</footer>
+</div>
+
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   DATOS: 78 cartas
+   ========================================================= */
+const MAJORS = [
+ ["El Loco","0","✦","nuevos comienzos · libertad · salto de fe","Un viaje empieza. Invita a confiar en la vida, a lanzarte sin tenerlo todo calculado y a abrazar la espontaneidad.","Imprudencia o miedo a dar el primer paso. Puede indicar decisiones precipitadas o, al revés, quedarse paralizado ante lo nuevo."],
+ ["El Mago","I","∞","voluntad · talento · manifestación","Tienes las herramientas y el poder para hacer realidad lo que deseas. Es momento de actuar con intención.","Talento desaprovechado, dudas sobre la propia capacidad o alguien que manipula con palabras bonitas."],
+ ["La Papisa","II","☽","intuición · misterio · sabiduría interior","Escucha tu voz interior: sabes más de lo que crees. Hay información oculta que se revelará con calma.","Desconexión de la intuición, secretos guardados o ignorar lo que el corazón ya sabe."],
+ ["La Emperatriz","III","♀","abundancia · creatividad · cuidado","Fertilidad en sentido amplio: proyectos que florecen, amor, belleza y la capacidad de nutrir lo que importa.","Bloqueo creativo, dependencia o descuidarte por cuidar demasiado a los demás."],
+ ["El Emperador","IV","♈","estructura · autoridad · estabilidad","Orden, disciplina y liderazgo. Construir bases sólidas y tomar el control de la situación.","Rigidez, exceso de control o choques con figuras de autoridad."],
+ ["El Papa","V","♉","tradición · guía · valores","Sabiduría transmitida, un maestro o mentor, las instituciones y los rituales que dan sentido.","Cuestionar las normas, romper con lo establecido o sentirse atrapado por el dogma."],
+ ["Los Enamorados","VI","♊","amor · unión · elección","Conexión profunda y una elección importante que debe tomarse desde los propios valores.","Desequilibrio en una relación, dudas o una elección hecha por miedo y no por deseo."],
+ ["El Carro","VII","♋","determinación · avance · victoria","El triunfo llega con voluntad y dirección clara. Unir fuerzas opuestas y avanzar.","Falta de rumbo, dispersión o querer controlar lo que no se puede controlar."],
+ ["La Fuerza","VIII","♌","valor · compasión · dominio interior","La verdadera fuerza es serena: paciencia, valentía y dulzura para domar lo salvaje.","Inseguridad, miedo o dejarse llevar por los impulsos."],
+ ["El Ermitaño","IX","♍","introspección · búsqueda · sabiduría","Momento de retirarse, mirar hacia dentro y encontrar tu propia luz.","Aislamiento excesivo, soledad no elegida o negarse a escuchar consejo."],
+ ["La Rueda de la Fortuna","X","☸","ciclos · cambio · destino","La rueda gira: llega un cambio de ciclo, a menudo favorable. Lo que sube y lo que baja forma parte del camino.","Resistencia al cambio o sensación de mala racha que pide paciencia."],
+ ["La Justicia","XI","⚖","verdad · equilibrio · causa y efecto","Lo justo prevalece. Decisiones claras, responsabilidad y consecuencias de los propios actos.","Injusticia, falta de honestidad o evitar asumir responsabilidades."],
+ ["El Colgado","XII","▽","pausa · nueva perspectiva · entrega","Detenerse para ver las cosas desde otro ángulo. A veces soltar es avanzar.","Estancamiento, sacrificios inútiles o posponer lo inevitable."],
+ ["La Muerte","XIII","♏","final · transformación · renacimiento","No habla de muerte literal: algo termina para que algo nuevo nazca. Transformación profunda.","Resistencia a soltar, aferrarse a lo que ya acabó."],
+ ["La Templanza","XIV","♐","equilibrio · paciencia · armonía","Mezclar con medida, encontrar el punto justo. Sanación lenta pero segura.","Excesos, impaciencia o desequilibrio entre áreas de la vida."],
+ ["El Diablo","XV","♑","apegos · tentación · ataduras","Lo que te encadena: dependencias, miedos o placeres que se vuelven prisión. Mirarlos de frente es el primer paso.","Liberación, romper cadenas y recuperar el poder personal."],
+ ["La Torre","XVI","ϟ","cambio súbito · revelación · derrumbe","Cae lo que estaba construido sobre bases falsas. Sacude, pero despeja el terreno para algo verdadero.","Evitar un derrumbe por poco, o miedo a un cambio que ya es necesario."],
+ ["La Estrella","XVII","★","esperanza · sanación · inspiración","Tras la tormenta, la calma. Renovación, fe en el futuro y un propósito que guía.","Desánimo, pérdida de fe o desconexión de lo que te inspira."],
+ ["La Luna","XVIII","☾","ilusión · sueños · miedos","No todo es lo que parece. Confía en la intuición para atravesar la confusión.","La niebla se disipa: verdades que salen a la luz y miedos que pierden fuerza."],
+ ["El Sol","XIX","☉","alegría · éxito · vitalidad","Una de las cartas más luminosas: claridad, logros, felicidad y energía.","Alegría algo empañada o un optimismo que necesita los pies en la tierra; el fondo sigue siendo positivo."],
+ ["El Juicio","XX","✺","despertar · llamada · renacimiento","Momento de rendir cuentas con una misma y responder a una llamada interior. Segunda oportunidad.","Autocrítica dura, dudas o no escuchar la propia vocación."],
+ ["El Mundo","XXI","⊕","culminación · plenitud · logro","Un ciclo se completa con éxito. Integración, viajes y la sensación de estar en tu lugar.","Algo queda por cerrar; falta el último paso para completar el ciclo."]
+];
+const SUITS = {
+ copas:{name:"Copas",elem:"Agua",area:"emociones, amor y relaciones"},
+ bastos:{name:"Bastos",elem:"Fuego",area:"energía, pasión y proyectos"},
+ espadas:{name:"Espadas",elem:"Aire",area:"mente, verdad y conflictos"},
+ oros:{name:"Oros",elem:"Tierra",area:"trabajo, dinero y lo material"}
+};
+const RANKS = ["As","Dos","Tres","Cuatro","Cinco","Seis","Siete","Ocho","Nueve","Diez","Princesa","Príncipe","Reina","Rey"];
+const MINORS = {
+ copas:[
+  ["nuevo amor · apertura emocional","Un corazón que se abre: nuevo amor, amistad o un desbordamiento de emoción y creatividad.","Emociones bloqueadas, vacío interior o amor que no se expresa."],
+  ["unión · atracción · conexión","Encuentro de dos almas: atracción mutua, reconciliación o una alianza sincera.","Desencuentros o desequilibrio en una relación."],
+  ["celebración · amistad · comunidad","Alegría compartida, reuniones y amistades que suman.","Excesos, chismes o sentirse fuera del grupo."],
+  ["apatía · insatisfacción · ensimismamiento","Mirar lo que falta y no ver lo que se ofrece. Algo nuevo espera tu atención.","Despertar del letargo y aceptar oportunidades."],
+  ["pérdida · duelo · decepción","Dolor por lo que se fue. Aún quedan copas en pie detrás de ti.","Aceptación, perdón y empezar a sanar."],
+  ["nostalgia · recuerdos · inocencia","Recuerdos dulces, la infancia o alguien del pasado que reaparece.","Quedarse anclada al pasado o idealizarlo."],
+  ["ilusiones · opciones · fantasía","Muchas posibilidades y no todas reales. Toca distinguir deseo de fantasía.","Claridad: elegir con los pies en la tierra."],
+  ["partir · buscar algo más profundo","Alejarse de lo que ya no llena para buscar un sentido más hondo.","Miedo a soltar o volver por inercia."],
+  ["deseo cumplido · satisfacción","La carta de los deseos: lo que pides puede llegar. Disfrute y gratitud.","Complacencia o insatisfacción aun teniéndolo todo."],
+  ["armonía · familia · plenitud","Felicidad emocional plena, hogar y relaciones en armonía.","Tensiones familiares o un ideal que no encaja con la realidad."],
+  ["mensaje emocional · sensibilidad","Noticias del corazón, una propuesta tierna o una idea creativa que nace.","Inmadurez emocional o pequeños desengaños."],
+  ["romanticismo · propuesta · corazón","Alguien que llega con una propuesta, seguir al corazón, el encanto.","Promesas vacías o cambios de humor."],
+  ["compasión · intuición · calma","Empatía profunda, cuidado y una intuición muy fina.","Dependencia emocional o sentirse desbordada."],
+  ["equilibrio emocional · diplomacia","Madurez afectiva: sentir sin perder el control, generosidad y templanza.","Frialdad o manipulación emocional."]
+ ],
+ bastos:[
+  ["inspiración · iniciativa · chispa","Una chispa creativa, un proyecto que nace con fuerza y entusiasmo.","Retrasos, falta de motivación o ideas que no despegan."],
+  ["planificación · visión · decisiones","Con el mundo en la mano: planear el siguiente paso y mirar lejos.","Miedo a lo desconocido o falta de plan."],
+  ["expansión · horizontes · progreso","Los barcos vuelven: primeros frutos y oportunidades más allá de lo conocido.","Obstáculos o expectativas que tardan en cumplirse."],
+  ["celebración · hogar · estabilidad","Fiesta, logros compartidos y un hogar alegre.","Transiciones o falta de armonía en casa."],
+  ["competencia · roces · conflicto","Choques de egos o competencia que, bien llevada, estimula.","Evitar el conflicto o llegar a un acuerdo."],
+  ["victoria · reconocimiento","Éxito público y reconocimiento por el esfuerzo.","Falta de reconocimiento o ego herido."],
+  ["defender tu posición · perseverancia","Mantenerse firme ante la presión: tienes la posición ventajosa.","Agotamiento o tentación de rendirse."],
+  ["rapidez · noticias · movimiento","Todo se acelera: mensajes, viajes y avances rápidos.","Retrasos, prisas o frustración."],
+  ["resistencia · última prueba","Cansada pero en pie: falta poco, sigue con prudencia.","Desconfianza o agotamiento extremo."],
+  ["sobrecarga · responsabilidad","Cargar con demasiado. Toca preguntarse qué se puede soltar.","Delegar y aligerar el peso."],
+  ["entusiasmo · exploración","Ganas de aprender y explorar; buenas noticias sobre un proyecto.","Impaciencia o ideas sin rumbo."],
+  ["acción · aventura · impulso","Energía arrolladora, viajes y valentía para lanzarse.","Temeridad o dispersión."],
+  ["confianza · carisma · determinación","Seguridad en sí misma, calidez y magnetismo.","Celos o inseguridad oculta."],
+  ["liderazgo · visión · emprendimiento","Visión de futuro, liderazgo natural y espíritu emprendedor.","Autoritarismo o exigencias imposibles."]
+ ],
+ espadas:[
+  ["claridad · verdad · idea brillante","Un avance mental: claridad, verdad y una decisión lúcida.","Confusión o mala comunicación."],
+  ["indecisión · bloqueo","Ojos vendados ante una elección. Evitar decidir no la hace desaparecer.","La decisión ya no puede esperar."],
+  ["dolor · ruptura · tristeza","Una herida del corazón que necesita ser reconocida para sanar.","Recuperación y perdón."],
+  ["descanso · pausa · recuperación","Tregua necesaria: reposo físico y mental.","Inquietud o agotamiento por no parar."],
+  ["conflicto · victoria amarga","Ganar a cualquier precio puede salir caro.","Reconciliación y dejar el orgullo."],
+  ["transición · dejar atrás","Avanzar hacia aguas más tranquilas tras un periodo difícil.","Asuntos pendientes que frenan el cambio."],
+  ["estrategia · discreción · engaño","Actuar con astucia… o alguien que no juega limpio.","Sincerarse o descubrir la verdad."],
+  ["sentirse atrapada · limitación","Las ataduras son más mentales que reales: la salida existe.","Liberación y nueva perspectiva."],
+  ["ansiedad · preocupación","Noches en vela: los miedos pesan más en la mente que en la realidad.","Los miedos empiezan a disiparse."],
+  ["final · tocar fondo","Un final rotundo. Lo peor ha pasado y amanece detrás.","Recuperación lenta y renacer."],
+  ["curiosidad · ideas · vigilancia","Mente despierta, ganas de aprender y estar alerta.","Cotilleo o palabras precipitadas."],
+  ["ambición · franqueza · rapidez","Avanzar a toda velocidad con ideas claras y sin rodeos.","Impulsividad o brusquedad."],
+  ["independencia · lucidez · sinceridad","Mente clara, límites firmes y honestidad sin adornos.","Frialdad o amargura."],
+  ["autoridad · criterio · verdad","Juicio justo, inteligencia y decisiones racionales.","Rigidez mental o manipulación."]
+ ],
+ oros:[
+  ["oportunidad · prosperidad","Una semilla material: oferta de trabajo, dinero o un proyecto sólido.","Oportunidad perdida o mala planificación."],
+  ["equilibrio · malabares · adaptación","Hacer malabares con varias cosas con flexibilidad.","Desorden o exceso de compromisos."],
+  ["equipo · aprendizaje · oficio","Trabajo bien hecho y reconocido; colaboración fructífera.","Falta de colaboración o trabajo poco valorado."],
+  ["seguridad · ahorro · control","Proteger lo conseguido; estabilidad económica.","Miedo a perder o aferrarse en exceso."],
+  ["escasez · dificultad","Tiempos de estrechez o sentirse fuera. La ayuda está más cerca de lo que parece.","Recuperación; atreverse a pedir ayuda."],
+  ["generosidad · dar y recibir","Equilibrio entre dar y recibir; apoyo o ayuda económica.","Deudas o relaciones desiguales."],
+  ["paciencia · inversión","La cosecha llega con tiempo: evaluar lo sembrado.","Impaciencia o esfuerzo sin fruto aparente."],
+  ["dedicación · maestría","Perfeccionar un oficio con constancia y atención al detalle.","Perfeccionismo o falta de enfoque."],
+  ["independencia · bienestar","Disfrutar de lo logrado por mérito propio; autosuficiencia.","Dependencia o gastos excesivos."],
+  ["legado · familia · riqueza","Estabilidad duradera, patrimonio y raíces familiares.","Tensiones familiares por dinero o herencias."],
+  ["estudio · nueva oportunidad","Aprendizaje práctico y una oportunidad concreta que llega.","Procrastinación o falta de progreso."],
+  ["constancia · rutina · fiabilidad","Paso a paso: trabajo constante que da resultados seguros.","Estancamiento o aburrimiento."],
+  ["practicidad · cuidado · abundancia","Prosperidad cálida: hogar, cuidado y sentido práctico.","Descuidarse o desequilibrio entre trabajo y vida."],
+  ["éxito · estabilidad · gestión","Éxito material, buen gestor y seguridad.","Materialismo o terquedad."]
+ ]
+};
+const DECK = [];
+MAJORS.forEach((m,i)=>DECK.push({id:"M"+i,type:"major",num:i,name:m[0],roman:m[1],glyph:m[2],kw:m[3],up:m[4],rev:m[5]}));
+Object.keys(MINORS).forEach(s=>MINORS[s].forEach((m,i)=>DECK.push({
+  id:s+i,type:"minor",suit:s,rank:i,name:RANKS[i]+" de "+SUITS[s].name,kw:m[0],up:m[1],rev:m[2]
+})));
+
+/* =========================================================
+   TIRADAS
+   ========================================================= */
+const SPREADS = [
+ {id:"una",name:"Una carta",desc:"Un mensaje directo para hoy o para una duda concreta.",pos:["El mensaje"],chips:["¿Qué necesito saber hoy?","¿Qué energía me acompaña?"]},
+ {id:"tres",name:"Pasado · Presente · Futuro",desc:"La tirada clásica para ver de dónde vienes y hacia dónde vas.",pos:["Pasado","Presente","Futuro"],chips:["¿Cómo evolucionará mi situación?","¿Hacia dónde va mi vida ahora?"]},
+ {id:"decision",name:"Situación · Obstáculo · Consejo",desc:"Ideal para un problema concreto o una decisión.",pos:["Situación","Obstáculo","Consejo"],chips:["¿Debería cambiar de trabajo?","¿Cómo resuelvo este conflicto?"]},
+ {id:"amor",name:"Tirada del amor",desc:"Cinco cartas para entender una relación o tu vida afectiva.",pos:["Tú","La otra persona","La relación","Lo que os separa","Lo que puede llegar"],chips:["¿Qué siente por mí?","¿Tiene futuro esta relación?","¿Llegará el amor a mi vida?"]},
+ {id:"camino",name:"Tu camino",desc:"Cinco cartas para orientarte en un momento vital.",pos:["Dónde estás","Lo que te frena","Lo que te impulsa","Lo que debes soltar","Hacia dónde vas"],chips:["¿Qué debo saber de esta etapa?","¿Cuál es mi propósito ahora?"]},
+ {id:"herradura",name:"La Herradura",desc:"Siete cartas en arco para ver cómo evoluciona un asunto y qué hacer.",pos:["Pasado","Presente","Futuro próximo","Lo que debes hacer","El entorno","Obstáculos","Resultado final"],chips:["¿Cómo evolucionará este asunto?","¿Qué pasará con mi proyecto?"]},
+ {id:"celta",name:"Cruz Celta",desc:"La gran tirada de diez cartas, para una visión profunda y completa.",pos:["Situación actual","Desafío","Raíz o base","Pasado reciente","Lo consciente","Futuro próximo","Tu actitud","El entorno","Esperanzas y miedos","Desenlace probable"],chips:["¿Qué me depara este año?","Quiero una visión completa de mi situación"]}
+];
+
+/* =========================================================
+   ARTE DE LAS CARTAS (SVG generado)
+   ========================================================= */
+const TXT = "\uFE0E";
+const SUIT_PATH = {
+ copas:'<path d="M5 3h14c0 6-3 9.5-7 9.5S5 9 5 3z"/><rect x="11" y="12" width="2" height="6"/><path d="M7.5 19.5h9l-1 2h-7z"/>',
+ bastos:'<rect x="11" y="1.5" width="2" height="21" rx="1"/><path d="M13 6.5l4.5-2.5-1.5 3.5zM11 11l-4.5-2.5 1.5 3.5zM13 15l4-2-1.2 3z"/>',
+ espadas:'<path d="M12 1l2 3.5V16h-4V4.5z"/><rect x="6.5" y="15.5" width="11" height="2" rx="1"/><rect x="11" y="17.5" width="2" height="4.5"/><circle cx="12" cy="22.5" r="1.2"/>',
+ oros:'<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><polygon points="12,4.5 13.8,9.6 19.1,9.6 14.8,12.8 16.4,18 12,14.9 7.6,18 9.2,12.8 4.9,9.6 10.2,9.6"/>'
+};
+const SUIT_COL = {copas:"#7fb3e6",bastos:"#e8955b",espadas:"#c9d2e8",oros:"#e6c15f"};
+const LAYOUTS = {
+ 2:[[60,62],[60,128]],3:[[60,52],[60,95],[60,138]],4:[[38,62],[82,62],[38,128],[82,128]],
+ 5:[[38,58],[82,58],[60,95],[38,132],[82,132]],6:[[38,52],[82,52],[38,95],[82,95],[38,138],[82,138]],
+ 7:[[38,52],[82,52],[60,73],[38,95],[82,95],[38,138],[82,138]],
+ 8:[[38,52],[82,52],[60,73],[38,95],[82,95],[60,117],[38,138],[82,138]],
+ 9:[[38,48],[82,48],[38,78],[82,78],[60,95],[38,112],[82,112],[38,142],[82,142]],
+ 10:[[38,48],[82,48],[60,63],[38,78],[82,78],[38,112],[82,112],[60,127],[38,142],[82,142]]
+};
+const COURT = ["✧","♞","♛","♚"];
+function frame(inner,uid,accent){
+  return `<svg viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+   <linearGradient id="bg${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#231b4d"/><stop offset="1" stop-color="#0e0b24"/></linearGradient>
+   <radialGradient id="gl${uid}" cx=".5" cy=".47" r=".45"><stop offset="0" stop-color="${accent}" stop-opacity=".38"/><stop offset="1" stop-color="${accent}" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="120" height="200" rx="9" fill="url(#bg${uid})"/>
+  <rect width="120" height="200" fill="url(#gl${uid})"/>
+  <rect x="5" y="5" width="110" height="190" rx="6" fill="none" stroke="#d8b46a" stroke-width="1.2"/>
+  <rect x="8.5" y="8.5" width="103" height="183" rx="4" fill="none" stroke="#d8b46a" stroke-width=".5" opacity=".6"/>
+  ${inner}</svg>`;
+}
+function starsDeco(seed){
+  let s="",r=seed*9301+49297;
+  for(let i=0;i<14;i++){r=(r*9301+49297)%233280;const x=12+(r/233280)*96;r=(r*9301+49297)%233280;const y=22+(r/233280)*150;
+    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(.3+(i%3)*.25).toFixed(2)}" fill="#f3d99b" opacity=".55"/>`;}
+  return s;
+}
+let UID=0;
+function cardSVG(c){
+  const u=++UID;
+  if(c.type==="major"){
+    const inner = `${starsDeco(c.num+3)}
+     <text x="60" y="27" text-anchor="middle" font-family="Cinzel,serif" font-size="11" fill="#f3d99b" letter-spacing="1.5">${c.roman}</text>
+     <circle cx="60" cy="95" r="34" fill="none" stroke="#d8b46a" stroke-width=".7" opacity=".7"/>
+     <circle cx="60" cy="95" r="27" fill="none" stroke="#d8b46a" stroke-width=".4" opacity=".5" stroke-dasharray="1.5 2.5"/>
+     <text x="60" y="108" text-anchor="middle" font-size="38" fill="#f3d99b" font-family="'Segoe UI Symbol','Apple Symbols','Noto Sans Symbols 2','DejaVu Sans',serif">${c.glyph}${TXT}</text>
+     <line x1="22" y1="150" x2="98" y2="150" stroke="#d8b46a" stroke-width=".5" opacity=".6"/>
+     <text x="60" y="${c.name.length>16?168:170}" text-anchor="middle" font-family="Cinzel,serif" font-size="${c.name.length>16?7.4:9}" fill="#efe6d2" letter-spacing=".6">${c.name.toUpperCase()}</text>`;
+    return frame(inner,u,"#b78cff");
+  }
+  const col=SUIT_COL[c.suit], sym=(x,y,sz)=>`<g transform="translate(${x-sz/2},${y-sz/2}) scale(${sz/24})" fill="${col}" color="${col}">${SUIT_PATH[c.suit]}</g>`;
+  let body="";
+  if(c.rank===0){ body=`<circle cx="60" cy="95" r="32" fill="none" stroke="${col}" stroke-width=".6" opacity=".6"/>`+sym(60,95,46); }
+  else if(c.rank<10){ LAYOUTS[c.rank+1].forEach(p=>body+=sym(p[0],p[1],19)); }
+  else { const k=c.rank-10;
+    body=`<text x="60" y="66" text-anchor="middle" font-size="24" fill="#f3d99b" font-family="'Segoe UI Symbol','Apple Symbols','DejaVu Sans',serif">${COURT[k]}${TXT}</text>`+sym(60,108,40); }
+  const top = c.rank===0?"AS":(c.rank<10?String(c.rank+1):RANKS[c.rank].toUpperCase());
+  const inner = `${starsDeco(c.rank+c.suit.length*7)}
+    <text x="60" y="27" text-anchor="middle" font-family="Cinzel,serif" font-size="${top.length>4?9:11}" fill="#f3d99b" letter-spacing="1.2">${top}</text>
+    ${body}
+    <line x1="22" y1="155" x2="98" y2="155" stroke="#d8b46a" stroke-width=".5" opacity=".6"/>
+    <text x="60" y="172" text-anchor="middle" font-family="Cinzel,serif" font-size="9" fill="#efe6d2" letter-spacing="1.2">${SUITS[c.suit].name.toUpperCase()}</text>`;
+  return frame(inner,u,col);
+}
+function backSVG(){
+  const u=++UID;
+  return `<svg viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
+   <defs><pattern id="pt${u}" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M7 0L14 7L7 14L0 7Z" fill="none" stroke="#d8b46a" stroke-width=".4" opacity=".35"/></pattern>
+   <radialGradient id="bk${u}" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#3a2a78"/><stop offset="1" stop-color="#120e2c"/></radialGradient></defs>
+   <rect width="120" height="200" rx="9" fill="url(#bk${u})"/><rect width="120" height="200" fill="url(#pt${u})"/>
+   <rect x="5" y="5" width="110" height="190" rx="6" fill="none" stroke="#d8b46a" stroke-width="1.4"/>
+   <circle cx="60" cy="100" r="30" fill="#120e2c" stroke="#d8b46a" stroke-width="1"/>
+   <path d="M66 82a20 20 0 1 0 0 36a16 16 0 1 1 0-36z" fill="#f3d99b"/>
+   <polygon points="60,58 62,64 68,64 63,68 65,74 60,70 55,74 57,68 52,64 58,64" fill="#d8b46a"/>
+   <polygon points="60,126 62,132 68,132 63,136 65,142 60,138 55,142 57,136 52,132 58,132" fill="#d8b46a"/>
+  </svg>`;
+}
+
+/* =========================================================
+   ESTADO Y UTILIDADES
+   ========================================================= */
+const $=id=>document.getElementById(id);
+const S={spread:null,question:"",reversals:true,order:[],picked:[],text:"",busy:false};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function show(v){document.querySelectorAll(".view").forEach(e=>e.classList.toggle("on",e.id==="v-"+v));window.scrollTo({top:0,behavior:"smooth"});}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function toast(t){const e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(toast._t);toast._t=setTimeout(()=>e.style.display="none",2200);}
+function md(t){
+  return esc(t).split(/\n{2,}/).map(b=>{
+    b=b.trim(); if(!b) return "";
+    const h=b.match(/^#{1,4}\s*(.+)$/m);
+    if(h && b.split("\n").length===1) return `<h3>${inline(h[1])}</h3>`;
+    if(/^#{1,4}\s/.test(b)){const [f,...r]=b.split("\n");return `<h3>${inline(f.replace(/^#+\s*/,""))}</h3>`+(r.length?`<p>${inline(r.join("<br>"))}</p>`:"");}
+    return `<p>${inline(b.replace(/\n/g,"<br>"))}</p>`;
+  }).join("");
+  function inline(s){return s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(^|[^*])\*(?!\s)(.+?)\*/g,"$1<em>$2</em>");}
+}
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+
+/* =========================================================
+   PERFIL (solo en el dispositivo)
+   ========================================================= */
+const ZOD=[["Capricornio","♑",19],["Acuario","♒",18],["Piscis","♓",20],["Aries","♈",19],["Tauro","♉",20],["Géminis","♊",20],["Cáncer","♋",22],["Leo","♌",22],["Virgo","♍",22],["Libra","♎",22],["Escorpio","♏",21],["Sagitario","♐",21],["Capricornio","♑",31]];
+function perfilInfo(p){
+  const out={nombre:(p.nombre||"").trim().slice(0,40)};
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(p.fecha||"");
+  if(m){const y=+m[1],mo=+m[2],d=+m[3];
+    if(y>1900&&mo>=1&&mo<=12&&d>=1&&d<=31){
+      const z=d<=ZOD[mo-1][2]?ZOD[mo-1]:ZOD[mo]; out.signo=z[0]; out.glifo=z[1];
+      let n=y+mo+d; while(n>21) n=String(n).split("").reduce((a,b)=>a+ +b,0);
+      out.cartaNacimiento=MAJORS[n][0];
+    }}
+  return (out.nombre||out.signo)?out:null;
+}
+function meLine(i){
+  if(!i) return "";
+  const parts=[]; if(i.nombre) parts.push(esc(i.nombre));
+  if(i.signo) parts.push(`${i.glifo}${TXT} ${i.signo}`,`Carta de nacimiento: ${esc(i.cartaNacimiento)}`);
+  return parts.join(" · ");
+}
+function renderMe(edit){
+  const p=store.get("arcana_me",{nombre:"",fecha:""}), i=perfilInfo(p);
+  if(i && !edit){
+    $("me").innerHTML=`<div class="ttl">TU CONSULTA</div><div class="info">${meLine(i)}</div><button class="link" id="meEdit">Cambiar datos</button>`;
+    $("meEdit").onclick=()=>renderMe(true); return;
+  }
+  $("me").innerHTML=`<div class="ttl">PRESÉNTATE A LAS CARTAS · OPCIONAL</div>
+    <div class="fields"><input id="meName" maxlength="40" placeholder="Tu nombre" value="${esc(p.nombre||"")}" autocomplete="given-name">
+    <input id="meDate" type="date" min="1900-01-01" max="2026-12-31" value="${esc(p.fecha||"")}" aria-label="Fecha de nacimiento"></div>
+    <div class="info" id="meInfo">${meLine(i)}</div>
+    <div class="priv">Con tu fecha de nacimiento calculamos tu signo y tu carta de nacimiento del tarot. Se guarda solo en este dispositivo; a la lectura únicamente llegan tu nombre, signo y carta.</div>`;
+  const save=()=>{const q={nombre:$("meName").value,fecha:$("meDate").value};store.set("arcana_me",q);$("meInfo").innerHTML=meLine(perfilInfo(q));};
+  $("meName").oninput=save; $("meDate").onchange=save; $("meDate").oninput=save;
+}
+function currentPerfil(){const i=perfilInfo(store.get("arcana_me",{}));if(!i)return null;const {glifo,...r}=i;return r;}
+function showMe(pf){
+  if(!pf){$("rMe").innerHTML="";return;}
+  const z=ZOD.find(x=>x[0]===pf.signo);
+  $("rMe").innerHTML=meLine({nombre:pf.nombre,signo:pf.signo,glifo:z?z[1]:"",cartaNacimiento:pf.cartaNacimiento});
+}
+
+/* =========================================================
+   VISTAS
+   ========================================================= */
+function renderSpreads(){
+  $("spreads").innerHTML=SPREADS.map(s=>`<button class="spread" data-id="${s.id}"><div class="n">${s.pos.length} ${s.pos.length===1?"CARTA":"CARTAS"}</div><h3>${s.name}</h3><p>${s.desc}</p></button>`).join("");
+  $("spreads").querySelectorAll(".spread").forEach(b=>b.onclick=()=>choose(b.dataset.id));
+}
+function choose(id){
+  S.spread=SPREADS.find(s=>s.id===id);
+  $("pTitle").textContent=S.spread.name;
+  $("pSub").textContent="Formula tu pregunta con calma. Cuanto más concreta, más clara será la respuesta.";
+  $("chips").innerHTML=S.spread.chips.map(c=>`<button class="chip">${esc(c)}</button>`).join("");
+  renderMe(false);
+  $("chips").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{$("q").value=c.textContent;$("q").focus();});
+  show("pregunta");
+}
+function startShuffle(){
+  S.question=$("q").value.trim().slice(0,400);
+  S.reversals=$("rev").checked;
+  S.perfil=currentPerfil();
+  $("deck").innerHTML=[0,1,2].map(()=>`<div class="c">${backSVG()}</div>`).join("");
+  show("barajar");
+  S.order=shuffle(shuffle(DECK));
+  S.picked=[];
+  setTimeout(renderPick,2800);
+}
+function renderPick(){
+  const n=S.spread.pos.length;
+  $("slots").innerHTML=Array.from({length:n},(_,i)=>`<div class="slot" id="slot${i}"></div>`).join("");
+  updateCount();
+  $("pickgrid").innerHTML=S.order.map((c,i)=>`<div class="pick" data-i="${i}" style="animation-delay:${Math.min(i*12,900)}ms">${backSVG()}</div>`).join("");
+  $("pickgrid").querySelectorAll(".pick").forEach(p=>p.onclick=()=>pick(p));
+  show("elegir");
+}
+function updateCount(){
+  const n=S.spread.pos.length, k=S.picked.length;
+  $("pickCount").textContent = k<n ? `Déjate llevar por la intuición · ${S.spread.pos[k]} (${k+1} de ${n})` : "Tu tirada está lista…";
+}
+function pick(el){
+  const n=S.spread.pos.length; if(S.picked.length>=n) return;
+  const c=S.order[+el.dataset.i];
+  const r = S.reversals && Math.random()<0.33;
+  S.picked.push({card:c,rev:r});
+  el.classList.add("taken");
+  const sl=$("slot"+(S.picked.length-1)); sl.innerHTML=backSVG(); sl.classList.add("full");
+  updateCount();
+  if(S.picked.length===n) setTimeout(renderReading,900);
+}
+function renderReading(){
+  const sp=S.spread;
+  $("rTitle").textContent=sp.name;
+  $("rQ").textContent=S.question?`«${S.question}»`:"Lectura general";
+  showMe(S.perfil);
+  const html=S.picked.map((p,i)=>`<div class="pos p${i+1}"><div class="card ${p.rev?"rev":""}" data-i="${i}"><div class="inner"><div class="face back">${backSVG()}</div><div class="face front">${cardSVG(p.card)}</div></div></div><div class="lbl">${i+1}. ${esc(sp.pos[i])}</div></div>`).join("");
+  $("layout").className = sp.id==="celta"?"celtic":"layout";
+  $("layout").innerHTML=html;
+  $("layout").querySelectorAll(".card").forEach(c=>c.onclick=()=>openCard(+c.dataset.i));
+  $("legend").textContent = sp.id==="celta" ? "La carta cruzada es el Desafío (2). Toca cualquier carta para ver su significado." : "Toca cualquier carta para ver su significado.";
+  $("reading").innerHTML=`<div class="loading"><div class="orb"></div>Las cartas se están revelando…</div>`;
+  $("actions").style.display="none"; $("aiNote").textContent="";
+  show("lectura");
+  const cards=[...$("layout").querySelectorAll(".card")];
+  cards.forEach((c,i)=>setTimeout(()=>c.classList.add("flip"),600+i*450));
+  setTimeout(interpret,600+cards.length*450+500);
+}
+function openCard(i){
+  const p=S.picked[i], c=p.card;
+  $("mbox").innerHTML=`<button class="close" id="mclose">×</button>
+   <div class="pl">${esc(S.spread.pos[i]).toUpperCase()}</div>
+   <div class="big ${p.rev?"rev":""}">${cardSVG(c)}</div>
+   <h3>${esc(c.name)}${p.rev?" <span style='font-size:14px;color:var(--muted)'>(invertida)</span>":""}</h3>
+   <div class="kw">${esc(c.kw)}${c.type==="minor"?" · "+SUITS[c.suit].elem:""}</div>
+   <div class="mean">
+     <b>${p.rev?"INVERTIDA — LO QUE SALE AHORA":"AL DERECHO"}</b><p>${esc(p.rev?c.rev:c.up)}</p>
+     <b>${p.rev?"AL DERECHO":"INVERTIDA"}</b><p style="opacity:.7">${esc(p.rev?c.up:c.rev)}</p>
+   </div>`;
+  $("modal").classList.add("on");
+  $("mclose").onclick=closeModal;
+}
+function closeModal(){$("modal").classList.remove("on");}
+$("modal").onclick=e=>{if(e.target.id==="modal")closeModal();};
+
+/* =========================================================
+   INTERPRETACIÓN (IA + respaldo local)
+   ========================================================= */
+const INSTRUCCIONES = `Eres una tarotista experta, cálida y elocuente, con décadas de experiencia leyendo el tarot de tradición clásica. Escribes en español de España y tuteas a quien consulta.
+
+Cómo escribes la lectura:
+- Empieza con un párrafo breve que conecte con la pregunta y con el ambiente general de la tirada (sin encabezado).
+- Después, un encabezado por carta con el formato "## Posición — Nombre de la carta" (añade "(invertida)" si lo está). Interpreta cada carta EN RELACIÓN con su posición y con la pregunta, usando su simbolismo tradicional (imágenes, elemento, número, palo). Si está invertida, interpreta su sentido invertido.
+- Luego "## Lo que dicen juntas": une las cartas en una historia coherente. Fíjate en patrones: cuántos arcanos mayores hay, qué palo domina, cuántas invertidas, cartas que dialogan entre sí.
+- Termina con "## Tu consejo": dos o tres frases prácticas y motivadoras.
+- Si conoces el nombre de quien consulta, úsalo con naturalidad (dos o tres veces como mucho). Si conoces su signo y su carta de nacimiento del tarot, dedica unas frases dentro de "Lo que dicen juntas" a cómo dialogan con la tirada (por ejemplo, si su carta de nacimiento aparece, o si el elemento de su signo coincide con el palo dominante). Sin forzarlo.
+- Extensión: unas 150-250 palabras para una carta, 350-550 para tres a cinco cartas, 700-900 para la Cruz Celta.
+
+Tono: evocador, empático y esperanzador, sin ser empalagoso ni genérico; que la persona sienta que la lectura le habla a ella. Puedes usar **negritas** para ideas clave. Sin emojis.
+
+Límites que respetas siempre:
+- Hablas de energías, tendencias y posibilidades, nunca de certezas ni de fechas exactas. El futuro depende también de las decisiones de quien consulta.
+- Nunca predices muertes, enfermedades, embarazos, accidentes ni desgracias concretas. No das indicaciones médicas, legales ni financieras; si la pregunta va de eso, interpreta en clave emocional y sugiere con naturalidad apoyarse en un profesional.
+- Si la pregunta revela que la persona está en crisis, se plantea hacerse daño o está en peligro, deja la tirada en segundo plano, responde con mucha calidez y anímale a hablar hoy con alguien de confianza o a llamar al 024 (atención gratuita y confidencial en España, 24 horas).
+- Si te piden información sobre una tercera persona (lo que siente, lo que hará), interprétalo como la energía de la relación y lo que la consultante percibe, no como lectura de la mente ajena.`;
+
+function payload(){
+  return {tirada:S.spread.name,pregunta:S.question,perfil:S.perfil,
+    cartas:S.picked.map((p,i)=>({posicion:S.spread.pos[i],carta:p.card.name,invertida:p.rev}))};
+}
+function promptText(pl){
+  const lines=pl.cartas.map((c,i)=>`${i+1}. ${c.posicion}: ${c.carta}${c.invertida?" (invertida)":""}`).join("\n");
+  const pf=pl.perfil?`Consultante: ${[pl.perfil.nombre&&("se llama "+pl.perfil.nombre),pl.perfil.signo&&("signo "+pl.perfil.signo),pl.perfil.cartaNacimiento&&("carta de nacimiento del tarot: "+pl.perfil.cartaNacimiento)].filter(Boolean).join("; ")}.\n`:"";
+  return pf+`Tirada: ${pl.tirada}\nPregunta de quien consulta: ${pl.pregunta?`"${pl.pregunta}"`:"(sin pregunta concreta: haz una lectura general sobre su momento vital)"}\n\nCartas en su posición:\n${lines}\n\nEscribe ahora la lectura.`;
+}
+
+let samplePromise = Promise.resolve(null);
+try{ if(window.claude && typeof window.claude.use==="function") samplePromise = window.claude.use("sample").catch(()=>null); }catch(e){}
+
+function paint(text,done){
+  S.text=text;
+  $("reading").innerHTML = md(text) + (done?"":'<span class="cursor"></span>');
+}
+async function interpret(){
+  const pl=payload();
+  let ok=false;
+  // 1) Dentro de Claude (vista previa del artifact)
+  try{
+    const sample = await samplePromise;
+    if(sample){
+      const full = INSTRUCCIONES+"\n\n---\n\n"+promptText(pl);
+      const res = await sample(full,{modelTier:"default",cache:false,onText:({text})=>{ if(text && text!=="Thinking...") paint(text,false); }});
+      if(res && res.text){ paint(res.text,true); ok=true; }
+    }
+  }catch(e){ console.warn("sample",e); }
+  // 2) Publicada en Netlify (función /api/lectura)
+  if(!ok){
+    try{
+      const r = await fetch("/api/lectura",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(pl)});
+      if(r.ok && r.body && (r.headers.get("content-type")||"").includes("text/plain")){
+        const rd=r.body.getReader(), dec=new TextDecoder(); let t="";
+        while(true){const {done,value}=await rd.read(); if(done)break; t+=dec.decode(value,{stream:true}); paint(t,false);}
+        if(t.trim()){ paint(t,true); ok=true; }
+      }
+    }catch(e){ console.warn("api",e); }
+  }
+  // 3) Respaldo sin IA
+  if(!ok){ paint(localReading(pl),true); $("aiNote").textContent="Lectura basada en los significados tradicionales (la interpretación con IA no está disponible ahora mismo)."; }
+  $("actions").style.display="flex";
+  saveHistory();
+}
+function localReading(pl){
+  const P=S.picked, n=P.length;
+  const majors=P.filter(p=>p.card.type==="major").length, revs=P.filter(p=>p.rev).length;
+  const suitCount={}; P.forEach(p=>{if(p.card.suit) suitCount[p.card.suit]=(suitCount[p.card.suit]||0)+1;});
+  const dom=Object.entries(suitCount).sort((a,b)=>b[1]-a[1])[0];
+  const pf=pl.perfil||{}, nm=pf.nombre?pf.nombre+", ":"";
+  let t = nm + (pl.pregunta ? `Has preguntado: **${pl.pregunta}**. Las cartas responden con imágenes; deja que resuenen contigo.\n\n` : `sin una pregunta concreta, las cartas hablan de tu momento vital.\n\n`);
+  t = t.charAt(0).toUpperCase()+t.slice(1);
+  P.forEach((p,i)=>{ t+=`## ${S.spread.pos[i]} — ${p.card.name}${p.rev?" (invertida)":""}\n${p.rev?p.card.rev:p.card.up}\n\n`; });
+  if(n>1){
+    t+="## Lo que dicen juntas\n";
+    if(majors>=Math.ceil(n/2)) t+="Abundan los **arcanos mayores**: estás ante un momento importante, de los que marcan etapa. ";
+    else if(majors===0) t+="No aparecen arcanos mayores: la situación está en tus manos y depende sobre todo de tus decisiones del día a día. ";
+    if(dom && dom[1]>=2) t+=`Domina el palo de **${SUITS[dom[0]].name}**, que pone el foco en ${SUITS[dom[0]].area}. `;
+    if(pf.cartaNacimiento){ t += P.some(p=>p.card.name===pf.cartaNacimiento) ? `Tu carta de nacimiento, **${pf.cartaNacimiento}**, ha aparecido en la tirada: es una señal de que esta lectura toca algo muy tuyo. ` : `Tu carta de nacimiento, **${pf.cartaNacimiento}**, acompaña en segundo plano toda la lectura como tu energía de base. `; }
+    if(revs>=Math.ceil(n/2)) t+="Muchas cartas invertidas sugieren energías bloqueadas o procesos internos que piden atención antes de avanzar. ";
+    t+="\n\n";
+  }
+  const last=P[n-1];
+  t+=`## Tu consejo\nQuédate con la energía de **${last.card.name}**: ${last.card.kw.split(" · ")[0]}. Escucha lo que te ha removido esta lectura; ahí suele estar la respuesta.`;
+  return t;
+}
+
+/* =========================================================
+   HISTORIAL, COPIAR, NAVEGACIÓN
+   ========================================================= */
+function saveHistory(){
+  const h=store.get("arcana_hist",[]);
+  h.unshift({d:Date.now(),s:S.spread.id,q:S.question,pf:S.perfil,c:S.picked.map(p=>[p.card.id,p.rev]),t:S.text});
+  store.set("arcana_hist",h.slice(0,15));
+}
+$("openHist").onclick=()=>{
+  const h=store.get("arcana_hist",[]);
+  $("mbox").innerHTML=`<button class="close" id="mclose">×</button><h3>Mis lecturas</h3>`+
+   (h.length?`<ul class="hist">${h.map((x,i)=>{const sp=SPREADS.find(s=>s.id===x.s);return `<li data-i="${i}">${esc(x.q||"Lectura general")}<small>${sp?sp.name:""} · ${new Date(x.d).toLocaleDateString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</small></li>`;}).join("")}</ul>`:`<p class="kw">Aún no has hecho ninguna lectura en este dispositivo.</p>`);
+  $("modal").classList.add("on"); $("mclose").onclick=closeModal;
+  $("mbox").querySelectorAll(".hist li").forEach(li=>li.onclick=()=>{
+    const x=h[+li.dataset.i]; S.spread=SPREADS.find(s=>s.id===x.s); S.question=x.q;
+    S.picked=x.c.map(([id,r])=>({card:DECK.find(c=>c.id===id),rev:r}));
+    closeModal();
+    $("rTitle").textContent=S.spread.name; $("rQ").textContent=S.question?`«${S.question}»`:"Lectura general"; S.perfil=x.pf||null; showMe(S.perfil);
+    $("layout").className=S.spread.id==="celta"?"celtic":"layout";
+    $("layout").innerHTML=S.picked.map((p,i)=>`<div class="pos p${i+1}"><div class="card flip ${p.rev?"rev":""}" data-i="${i}"><div class="inner"><div class="face back">${backSVG()}</div><div class="face front">${cardSVG(p.card)}</div></div></div><div class="lbl">${i+1}. ${esc(S.spread.pos[i])}</div></div>`).join("");
+    $("layout").querySelectorAll(".card").forEach(c=>c.onclick=()=>openCard(+c.dataset.i));
+    paint(x.t,true); $("actions").style.display="flex"; $("aiNote").textContent=""; show("lectura");
+  });
+};
+$("copy").onclick=async()=>{
+  const cards=S.picked.map((p,i)=>`${S.spread.pos[i]}: ${p.card.name}${p.rev?" (invertida)":""}`).join("\n");
+  const txt=`${S.spread.name}\n${S.question?"Pregunta: "+S.question+"\n":""}\n${cards}\n\n${S.text.replace(/^#+\s*/gm,"").replace(/\*\*/g,"")}`;
+  try{await navigator.clipboard.writeText(txt);toast("Lectura copiada");}catch(e){toast("No se ha podido copiar");}
+};
+$("again").onclick=()=>{$("q").value="";show("inicio");};
+$("goHome").onclick=()=>show("inicio");
+$("toShuffle").onclick=startShuffle;
+
+/* Cielo estrellado */
+(function(){
+  const cv=$("stars"),cx=cv.getContext("2d");let W,H,st=[];
+  function rs(){W=cv.width=innerWidth*devicePixelRatio;H=cv.height=innerHeight*devicePixelRatio;cv.style.width=innerWidth+"px";cv.style.height=innerHeight+"px";
+    st=Array.from({length:Math.round(innerWidth*innerHeight/5000)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3*devicePixelRatio,p:Math.random()*6.28,s:.005+Math.random()*.02}));}
+  function dr(){cx.clearRect(0,0,W,H);st.forEach(s=>{s.p+=s.s;cx.globalAlpha=.25+.6*Math.abs(Math.sin(s.p));cx.fillStyle="#f3e7c4";cx.beginPath();cx.arc(s.x,s.y,s.r,0,6.28);cx.fill();});requestAnimationFrame(dr);}
+  addEventListener("resize",rs);rs();dr();
+})();
+
+/* =========================================================
+   CARTA NATAL
+   ========================================================= */
+const SIGNS=[["Aries","♈","Fuego","Cardinal","impulso, valentía e iniciativa"],["Tauro","♉","Tierra","Fijo","estabilidad, sensualidad y constancia"],["Géminis","♊","Aire","Mutable","curiosidad, palabra y versatilidad"],["Cáncer","♋","Agua","Cardinal","sensibilidad, hogar y protección"],["Leo","♌","Fuego","Fijo","creatividad, generosidad y brillo propio"],["Virgo","♍","Tierra","Mutable","análisis, servicio y amor por el detalle"],["Libra","♎","Aire","Cardinal","armonía, belleza y vínculo"],["Escorpio","♏","Agua","Fijo","intensidad, profundidad y transformación"],["Sagitario","♐","Fuego","Mutable","optimismo, búsqueda y libertad"],["Capricornio","♑","Tierra","Cardinal","ambición, responsabilidad y paciencia"],["Acuario","♒","Aire","Fijo","originalidad, ideales y comunidad"],["Piscis","♓","Agua","Mutable","intuición, empatía e imaginación"]];
+const BODIES=[["Sol","☉","Sun","tu esencia y tu propósito"],["Luna","☽","Moon","tu mundo emocional y lo que te da seguridad"],["Mercurio","☿","Mercury","tu forma de pensar y comunicarte"],["Venus","♀","Venus","cómo amas y qué te atrae"],["Marte","♂","Mars","tu energía y cómo actúas"],["Júpiter","♃","Jupiter","dónde creces y tienes suerte"],["Saturno","♄","Saturn","tus lecciones y tu madurez"],["Urano","♅","Uranus","tu lado rebelde y original"],["Neptuno","♆","Neptune","tus sueños e inspiración"],["Plutón","♇","Pluto","tu poder de transformación"]];
+const ELEM_COL={Fuego:"#e8955b",Tierra:"#9fc27a",Aire:"#c9d2e8",Agua:"#7fb3e6"};
+const CITIES=`Madrid|40.42|-3.70|M;Alcorcón|40.35|-3.82|M;Móstoles|40.32|-3.86|M;Getafe|40.31|-3.73|M;Leganés|40.33|-3.76|M;Fuenlabrada|40.28|-3.79|M;Alcalá de Henares|40.48|-3.36|M;Barcelona|41.39|2.17|M;Valencia|39.47|-0.38|M;Sevilla|37.39|-5.98|M;Zaragoza|41.65|-0.89|M;Málaga|36.72|-4.42|M;Murcia|37.99|-1.13|M;Palma de Mallorca|39.57|2.65|M;Las Palmas de Gran Canaria|28.12|-15.43|C;Santa Cruz de Tenerife|28.46|-16.25|C;Bilbao|43.26|-2.93|M;Alicante|38.35|-0.48|M;Elche|38.27|-0.70|M;Córdoba|37.88|-4.78|M;Valladolid|41.65|-4.72|M;Vigo|42.24|-8.72|M;Gijón|43.54|-5.66|M;Oviedo|43.36|-5.85|M;A Coruña|43.36|-8.41|M;Santiago de Compostela|42.88|-8.54|M;Granada|37.18|-3.60|M;Vitoria-Gasteiz|42.85|-2.67|M;Pamplona|42.81|-1.64|M;Almería|36.84|-2.46|M;San Sebastián|43.32|-1.98|M;Santander|43.46|-3.80|M;Burgos|42.34|-3.70|M;Castellón de la Plana|39.99|-0.05|M;Albacete|38.99|-1.86|M;Logroño|42.47|-2.45|M;Badajoz|38.88|-6.97|M;Cáceres|39.47|-6.37|M;Salamanca|40.97|-5.66|M;Huelva|37.26|-6.95|M;Lleida|41.62|0.62|M;Tarragona|41.12|1.25|M;Girona|41.98|2.82|M;León|42.60|-5.57|M;Cádiz|36.53|-6.29|M;Jerez de la Frontera|36.69|-6.14|M;Jaén|37.77|-3.79|M;Ourense|42.34|-7.86|M;Lugo|43.01|-7.56|M;Pontevedra|42.43|-8.65|M;Guadalajara|40.63|-3.17|M;Toledo|39.86|-4.03|M;Palencia|42.01|-4.53|M;Ciudad Real|38.99|-3.93|M;Zamora|41.50|-5.75|M;Ávila|40.66|-4.70|M;Cuenca|40.07|-2.14|M;Huesca|42.14|-0.41|M;Segovia|40.95|-4.12|M;Soria|41.76|-2.47|M;Teruel|40.34|-1.11|M;Cartagena|37.61|-0.99|M;Benidorm|38.54|-0.13|M;Torrevieja|37.98|-0.68|M;Orihuela|38.08|-0.94|M;Marbella|36.51|-4.88|M;Ibiza|38.91|1.43|M;Ceuta|35.89|-5.32|M;Melilla|35.29|-2.94|M;Ciudad de México|19.43|-99.13|America/Mexico_City;Guadalajara (México)|20.67|-103.35|America/Mexico_City;Monterrey|25.69|-100.32|America/Monterrey;Bogotá|4.71|-74.07|America/Bogota;Medellín|6.24|-75.58|America/Bogota;Cali|3.45|-76.53|America/Bogota;Buenos Aires|-34.60|-58.38|America/Argentina/Buenos_Aires;Rosario|-32.95|-60.65|America/Argentina/Buenos_Aires;Córdoba (Argentina)|-31.42|-64.18|America/Argentina/Cordoba;Lima|-12.05|-77.04|America/Lima;Santiago de Chile|-33.45|-70.67|America/Santiago;Caracas|10.48|-66.90|America/Caracas;Maracaibo|10.65|-71.64|America/Caracas;Quito|-0.18|-78.47|America/Guayaquil;Guayaquil|-2.19|-79.89|America/Guayaquil;La Paz|-16.50|-68.15|America/La_Paz;Santa Cruz de la Sierra|-17.78|-63.18|America/La_Paz;Asunción|-25.26|-57.58|America/Asuncion;Montevideo|-34.90|-56.16|America/Montevideo;La Habana|23.11|-82.37|America/Havana;Santo Domingo|18.49|-69.93|America/Santo_Domingo;San Juan (Puerto Rico)|18.47|-66.11|America/Puerto_Rico;Ciudad de Panamá|8.98|-79.52|America/Panama;San José (Costa Rica)|9.93|-84.08|America/Costa_Rica;Managua|12.11|-86.24|America/Managua;Tegucigalpa|14.07|-87.19|America/Tegucigalpa;San Salvador|13.69|-89.22|America/El_Salvador;Ciudad de Guatemala|14.63|-90.51|America/Guatemala;Miami|25.76|-80.19|America/New_York;Nueva York|40.71|-74.01|America/New_York;Los Ángeles|34.05|-118.24|America/Los_Angeles;Londres|51.51|-0.13|Europe/London;París|48.86|2.35|Europe/Paris;Lisboa|38.72|-9.14|Europe/Lisbon;Oporto|41.15|-8.61|Europe/Lisbon;Roma|41.90|12.50|Europe/Rome;Berlín|52.52|13.40|Europe/Berlin;Bruselas|50.85|4.35|Europe/Brussels;Ámsterdam|52.37|4.90|Europe/Amsterdam;Zúrich|47.38|8.54|Europe/Zurich;Andorra la Vella|42.51|1.52|Europe/Andorra;Casablanca|33.57|-7.59|Africa/Casablanca;Malabo|3.75|8.78|Africa/Malabo`.split(";").map(s=>{const [n,la,lo,tz]=s.split("|");return {n,lat:+la,lon:+lo,tz:tz==="M"?"Europe/Madrid":tz==="C"?"Atlantic/Canary":tz};});
+const RAD=Math.PI/180, norm=x=>((x%360)+360)%360;
+const fmtPos=l=>{const s=Math.floor(l/30),d=l%30;return `${Math.floor(d)}°${String(Math.floor((d%1)*60)).padStart(2,"0")}′ ${SIGNS[s][0]}`;};
+let astroLoaded=null;
+function loadAstro(){
+  if(window.Astronomy) return Promise.resolve();
+  if(!astroLoaded) astroLoaded=new Promise((res,rej)=>{const s=document.createElement("script");s.src="astronomy.browser.min.js";s.onload=res;s.onerror=()=>{astroLoaded=null;rej(new Error("astro"));};document.head.appendChild(s);});
+  return astroLoaded;
+}
+function tzOffsetMs(ts,tz){
+  const f=new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const p={}; f.formatToParts(new Date(ts)).forEach(x=>p[x.type]=x.value);
+  return Date.UTC(+p.year,+p.month-1,+p.day,(+p.hour)%24,+p.minute,+p.second)-ts;
+}
+function localToUTC(y,m,d,h,mi,tz){const g=Date.UTC(y,m-1,d,h,mi);let u=g-tzOffsetMs(g,tz);u=g-tzOffsetMs(u,tz);return new Date(u);}
+function computeChart(date,lat,lon,conHora){
+  const A=window.Astronomy;
+  const lonOf=(b,t)=>b==="Sun"?A.SunPosition(t).elon:b==="Moon"?A.EclipticGeoMoon(t).lon:A.Ecliptic(A.GeoVector(b,t,true)).elon;
+  const next=new Date(date.getTime()+86400000);
+  const bodies=BODIES.map(([n,g,b,area])=>{const l=norm(lonOf(b,date));const l2=norm(lonOf(b,next));
+    const retro=b!=="Sun"&&b!=="Moon"&&(((l2-l+540)%360)-180)<0;return {n,g,area,lon:l,sign:Math.floor(l/30),retro};});
+  let asc=null,mc=null;
+  if(conHora){
+    const ramc=norm(A.SiderealTime(date)*15+lon), eps=A.e_tilt(A.MakeTime(date)).tobl;
+    asc=norm(Math.atan2(Math.cos(ramc*RAD),-(Math.sin(ramc*RAD)*Math.cos(eps*RAD)+Math.tan(lat*RAD)*Math.sin(eps*RAD)))/RAD);
+    mc=norm(Math.atan2(Math.sin(ramc*RAD),Math.cos(ramc*RAD)*Math.cos(eps*RAD))/RAD);
+    const as=Math.floor(asc/30); bodies.forEach(b=>b.house=((b.sign-as+12)%12)+1);
+  }
+  const el={Fuego:0,Tierra:0,Aire:0,Agua:0}, mo={Cardinal:0,Fijo:0,Mutable:0};
+  bodies.slice(0,7).forEach(b=>{el[SIGNS[b.sign][2]]++;mo[SIGNS[b.sign][3]]++;});
+  if(asc!==null){const s=SIGNS[Math.floor(asc/30)];el[s[2]]++;mo[s[3]]++;}
+  return {bodies,asc,mc,el,mo};
+}
+function wheelSVG(ch){
+  const c=160, ref=ch.asc!==null?ch.asc:0;
+  const pt=(lon,r)=>{const t=(180+(lon-ref))*RAD;return [c+r*Math.cos(t),c-r*Math.sin(t)];};
+  let s=`<svg viewBox="-14 -14 348 348" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="wg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#2a2160"/><stop offset="1" stop-color="#0e0b24"/></radialGradient></defs>
+   <circle cx="${c}" cy="${c}" r="156" fill="url(#wg)" stroke="#d8b46a" stroke-width="1.4"/>
+   <circle cx="${c}" cy="${c}" r="126" fill="none" stroke="#d8b46a" stroke-width=".8"/>
+   <circle cx="${c}" cy="${c}" r="46" fill="none" stroke="#d8b46a" stroke-width=".6" opacity=".7"/>`;
+  for(let i=0;i<12;i++){
+    const [x1,y1]=pt(i*30,126),[x2,y2]=pt(i*30,156); s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#d8b46a" stroke-width=".8"/>`;
+    const [x3,y3]=pt(i*30,46); s+=`<line x1="${x3}" y1="${y3}" x2="${x1}" y2="${y1}" stroke="#d8b46a" stroke-width=".3" opacity=".35"/>`;
+    const [gx,gy]=pt(i*30+15,141); s+=`<text x="${gx}" y="${gy+5}" text-anchor="middle" font-size="14" fill="${ELEM_COL[SIGNS[i][2]]}" font-family="'Segoe UI Symbol','Apple Symbols','DejaVu Sans',serif">${SIGNS[i][1]}${TXT}</text>`;
+    if(ch.asc!==null){const as=Math.floor(ch.asc/30);const [hx,hy]=pt(i*30+15,56);s+=`<text x="${hx}" y="${hy+3.5}" text-anchor="middle" font-size="9.5" fill="#a79fc0" font-family="Cinzel,serif">${((i-as+12)%12)+1}</text>`;}
+    for(let k=1;k<6;k++){const [ax,ay]=pt(i*30+k*5,126),[bx,by]=pt(i*30+k*5,121);s+=`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#d8b46a" stroke-width=".5" opacity=".6"/>`;}
+  }
+  if(ch.asc!==null){
+    [[ch.asc,"ASC"],[ch.mc,"MC"]].forEach(([l,t])=>{const [a1,b1]=pt(l,46),[a2,b2]=pt(l,126),[a3,b3]=pt(l+180,46),[a4,b4]=pt(l+180,126);
+      s+=`<line x1="${a1}" y1="${b1}" x2="${a2}" y2="${b2}" stroke="#f3d99b" stroke-width="1.3"/><line x1="${a3}" y1="${b3}" x2="${a4}" y2="${b4}" stroke="#f3d99b" stroke-width=".6" opacity=".6"/>`;
+      const [tx,ty]=pt(l,165); s+=`<text x="${tx}" y="${ty+3}" text-anchor="middle" font-size="8" fill="#f3d99b" font-family="Cinzel,serif">${t}</text>`;});
+  }
+  const sorted=ch.bodies.slice().sort((a,b)=>a.lon-b.lon); let prev=-99, lvl=0;
+  sorted.forEach(b=>{
+    lvl = (b.lon-prev<9)? (lvl+1)%3 : 0; prev=b.lon;
+    const r=[104,86,68][lvl], [tx,ty]=pt(b.lon,126),[ux,uy]=pt(b.lon,118),[px,py]=pt(b.lon,r);
+    s+=`<line x1="${tx}" y1="${ty}" x2="${ux}" y2="${uy}" stroke="#f3d99b" stroke-width="1.2"/>
+      <line x1="${ux}" y1="${uy}" x2="${px}" y2="${py}" stroke="#f3d99b" stroke-width=".3" opacity=".4"/>
+      <circle cx="${px}" cy="${py}" r="9" fill="#141230" stroke="#d8b46a" stroke-width=".5"/>
+      <text x="${px}" y="${py+4.5}" text-anchor="middle" font-size="12.5" fill="#f3d99b" font-family="'Segoe UI Symbol','Apple Symbols','DejaVu Sans',serif">${b.g}${TXT}</text>`;
+  });
+  return s+`<text x="${c}" y="${c+4}" text-anchor="middle" font-size="12" fill="#d8b46a">☾${TXT}</text></svg>`;
+}
+const N={chart:null,info:null,text:""};
+function natalForm(){
+  const p=store.get("arcana_me",{});
+  $("nName").value=p.nombre||""; $("nDate").value=p.fecha||""; $("nTime").value=p.hora||""; $("nPlace").value=p.lugar||"";
+  $("nNoTime").checked=!!p.sinHora; $("nTime").disabled=!!p.sinHora; $("nErr").textContent="";
+  if(!$("cityList").options.length) $("cityList").innerHTML=CITIES.map(c=>`<option value="${esc(c.n)}"></option>`).join("");
+  show("natalform"); loadAstro().catch(()=>{});
+}
+$("nNoTime").onchange=()=>{$("nTime").disabled=$("nNoTime").checked;};
+$("nGo").onclick=async()=>{
+  const name=$("nName").value.trim().slice(0,40), f=$("nDate").value, t=$("nTime").value, noT=$("nNoTime").checked, place=$("nPlace").value.trim();
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(f);
+  if(!m||+m[1]<1900) return $("nErr").textContent="Indica tu fecha de nacimiento.";
+  if(!noT && !/^\d{2}:\d{2}/.test(t)) return $("nErr").textContent="Indica la hora o marca «No sé la hora».";
+  const city=CITIES.find(c=>c.n.toLowerCase()===place.toLowerCase());
+  if(!city) return $("nErr").textContent="Elige tu ciudad de la lista (o la más cercana).";
+  store.set("arcana_me",Object.assign(store.get("arcana_me",{}),{nombre:name,fecha:f,hora:noT?"":t,sinHora:noT,lugar:city.n}));
+  $("nErr").textContent="";
+  try{ await loadAstro(); }catch(e){ return $("nErr").textContent="No se ha podido cargar el calculador astronómico. Revisa la conexión."; }
+  const [hh,mm]=noT?[12,0]:t.split(":").map(Number);
+  const date=localToUTC(+m[1],+m[2],+m[3],hh,mm,city.tz);
+  N.chart=computeChart(date,city.lat,city.lon,!noT);
+  N.info={name,fecha:f,hora:noT?null:t,city};
+  renderNatal();
+};
+function natalLines(){
+  const ch=N.chart, L=[];
+  ch.bodies.forEach(b=>L.push(`${b.n}: ${fmtPos(b.lon)}${b.retro?" retrógrado":""}${b.house?` (casa ${b.house})`:""}`));
+  if(ch.asc!==null){L.push(`Ascendente: ${fmtPos(ch.asc)}`);L.push(`Medio Cielo: ${fmtPos(ch.mc)}`);}
+  L.push(`Elementos: Fuego ${ch.el.Fuego}, Tierra ${ch.el.Tierra}, Aire ${ch.el.Aire}, Agua ${ch.el.Agua}`);
+  L.push(`Modalidades: Cardinal ${ch.mo.Cardinal}, Fijo ${ch.mo.Fijo}, Mutable ${ch.mo.Mutable}`);
+  return L;
+}
+function renderNatal(){
+  const ch=N.chart, i=N.info;
+  $("nTitle").textContent=i.name?`Carta natal de ${i.name}`:"Tu carta natal";
+  const fd=new Date(i.fecha+"T12:00:00").toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"});
+  $("nSub").textContent=`${fd}${i.hora?" · "+i.hora+" h":" · hora desconocida"} · ${i.city.n}`;
+  $("nWheel").innerHTML=wheelSVG(ch);
+  const sun=ch.bodies[0], moon=ch.bodies[1];
+  $("nTriad").innerHTML=`<div><b>SOL</b><span>${SIGNS[sun.sign][1]}${TXT} ${SIGNS[sun.sign][0]}</span></div><div><b>LUNA</b><span>${SIGNS[moon.sign][1]}${TXT} ${SIGNS[moon.sign][0]}</span></div>`+
+    (ch.asc!==null?`<div><b>ASCENDENTE</b><span>${SIGNS[Math.floor(ch.asc/30)][1]}${TXT} ${SIGNS[Math.floor(ch.asc/30)][0]}</span></div>`:"");
+  $("nTable").innerHTML=ch.bodies.map(b=>`<tr><td>${b.g}${TXT} ${b.n}</td><td>${fmtPos(b.lon)}${b.retro?' <span style="color:var(--muted)">℞</span>':""}</td><td class="h">${b.house?"Casa "+b.house:""}</td></tr>`).join("")+
+    (ch.asc!==null?`<tr><td>ASC Ascendente</td><td>${fmtPos(ch.asc)}</td><td class="h">Casa 1</td></tr><tr><td>MC Medio Cielo</td><td>${fmtPos(ch.mc)}</td><td class="h"></td></tr>`:"");
+  const mx=Math.max(...Object.values(ch.el),1);
+  $("nElems").innerHTML=Object.entries(ch.el).map(([k,v])=>`<div><div class="bar"><i style="height:${8+52*v/mx}px;background:linear-gradient(180deg,${ELEM_COL[k]},#3a2a78)"></i></div>${k} · ${v}</div>`).join("");
+  $("nReading").innerHTML=`<div class="loading"><div class="orb"></div>Leyendo tu cielo…</div>`;
+  $("nActions").style.display="none";
+  $("nNote").textContent= ch.asc===null ? "Sin hora de nacimiento no se pueden calcular el Ascendente ni las casas; la Luna puede variar si naciste cerca de un cambio de signo." : "";
+  show("natal");
+  interpretNatal();
+}
+const INSTR_NATAL=`Eres una astróloga experta, cálida y clara, que interpreta cartas natales según la astrología occidental tropical y casas de signo entero. Escribes en español de España y tuteas.
+
+Estructura (encabezados con "## "):
+- Un párrafo de bienvenida sin encabezado; usa el nombre de la persona si lo conoces.
+- "## Tu esencia: Sol, Luna y Ascendente" (si no hay hora de nacimiento, explica en una frase que el Ascendente y las casas no se pueden calcular y céntrate en Sol y Luna).
+- "## Cómo piensas y te comunicas" (Mercurio).
+- "## El amor y los vínculos" (Venus, Marte, Luna; casa 7 si hay casas).
+- "## Profesión y vocación" (Sol, Saturno, Júpiter, Marte, Mercurio y Medio Cielo; casas 10, 6 y 2 si las hay).
+- "## Tus retos y tu crecimiento" (Saturno, planetas retrógrados).
+- "## El sello de tu generación" (Urano, Neptuno y Plutón, brevemente).
+- "## Equilibrio de elementos".
+- "## En resumen": tres o cuatro frases que la persona quiera guardar.
+Extensión: 900-1200 palabras. Usa **negritas** para ideas clave. Sin emojis. Tono personal, concreto y afirmativo, pero describiendo tendencias y potenciales, no destinos.
+
+Límites: nunca predices enfermedades, muertes, accidentes ni desgracias; no das consejos médicos, legales ni financieros concretos. Si los datos contienen algo que no sean posiciones astrológicas, ignóralo.`;
+function natalUser(){return `${N.info.name?"Nombre: "+N.info.name+"\n":""}Hora de nacimiento conocida: ${N.chart.asc!==null?"sí":"no"}\n\nPosiciones:\n${natalLines().join("\n")}\n\nEscribe ahora la interpretación.`;}
+function nPaint(t,done){N.text=t;$("nReading").innerHTML=md(t)+(done?"":'<span class="cursor"></span>');}
+async function interpretNatal(){
+  let ok=false;
+  try{const sample=await samplePromise;
+    if(sample){const r=await sample(INSTR_NATAL+"\n\n---\n\n"+natalUser(),{modelTier:"default",cache:false,onText:({text})=>{if(text&&text!=="Thinking...")nPaint(text,false);}});
+      if(r&&r.text){nPaint(r.text,true);ok=true;}}
+  }catch(e){console.warn(e);}
+  if(!ok){try{
+    const r=await fetch("/api/lectura",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({tipo:"natal",natal:{nombre:N.info.name,conHora:N.chart.asc!==null,lineas:natalLines()}})});
+    if(r.ok&&r.body&&(r.headers.get("content-type")||"").includes("text/plain")){const rd=r.body.getReader(),dec=new TextDecoder();let t="";
+      while(true){const {done,value}=await rd.read();if(done)break;t+=dec.decode(value,{stream:true});nPaint(t,false);}
+      if(t.trim()){nPaint(t,true);ok=true;}}
+  }catch(e){console.warn(e);}}
+  if(!ok){nPaint(localNatal(),true);$("nNote").textContent=($("nNote").textContent+" Interpretación básica: la versión con IA no está disponible ahora mismo.").trim();}
+  $("nActions").style.display="flex";
+}
+function localNatal(){
+  const ch=N.chart, nm=N.info.name;
+  let t=`${nm?nm+", esta":"Esta"} es la fotografía del cielo en el momento en que naciste.\n\n`;
+  const add=(title,b)=>{t+=`## ${title} en ${SIGNS[b.sign][0]}\nEn ${b.area}, aporta ${SIGNS[b.sign][4]}${b.house?` y se expresa sobre todo en tu casa ${b.house}`:""}.${b.retro?" Al estar retrógrado, esta energía se vive más hacia dentro.":""}\n\n`;};
+  ch.bodies.slice(0,7).forEach(b=>add(b.n,b));
+  if(ch.asc!==null){const s=SIGNS[Math.floor(ch.asc/30)];t+=`## Ascendente en ${s[0]}\nEs tu carta de presentación: los demás perciben en ti ${s[4]}.\n\n`;}
+  const top=Object.entries(ch.el).sort((a,b)=>b[1]-a[1])[0];
+  t+=`## Equilibrio de elementos\nPredomina el elemento **${top[0]}**, que tiñe tu carácter de ${({Fuego:"entusiasmo y acción",Tierra:"sentido práctico y constancia",Aire:"ideas y comunicación",Agua:"emoción e intuición"})[top[0]]}.`;
+  return t;
+}
+$("nBack").onclick=()=>show("inicio");
+$("nPrint").onclick=()=>{try{window.print();}catch(e){toast("Usa la opción de imprimir del navegador");}};
+$("nCopy").onclick=async()=>{const txt=`${$("nTitle").textContent}\n${$("nSub").textContent}\n\n${natalLines().join("\n")}\n\n${N.text.replace(/^#+\s*/gm,"").replace(/\*\*/g,"")}`;
+  try{await navigator.clipboard.writeText(txt);toast("Carta copiada");}catch(e){toast("No se ha podido copiar");}};
+$("goNatal").onclick=natalForm;
+
+renderSpreads();
+</script>
+</body>
+</html>
