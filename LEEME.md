@@ -25,3 +25,10 @@ Sin clave o si la IA falla, la web sigue funcionando con una lectura basada en l
 ## Coste orientativo
 Cada lectura son unos 1.000–2.500 tokens. Como referencia, con Haiku sale en torno a un euro (o menos) cada cien lecturas y con Sonnet unas tres veces más; revisa los precios actuales en la web de Anthropic.
 Pon un límite de gasto mensual en la consola de Anthropic por si la web se hace popular.
+
+## Páginas de significado de las cartas (SEO)
+- `cartas/` contiene una página por carta (`/cartas/cinco-de-copas/`) y un índice (`/cartas/`).
+- `sitemap.xml` y `robots.txt` ayudan a Google a encontrarlas.
+- Se generan con `node scripts/generar-cartas.mjs` a partir de los datos de `index.html`.
+  Si cambias significados o el diseño de las cartas, vuelve a ejecutarlo.
+- Para acelerar la indexación: da de alta la web en Google Search Console y envía `sitemap.xml`.

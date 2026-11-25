@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arcana · Lectura de Tarot</title>
-<meta name="description" content="Lecturas de tarot interpretadas con inteligencia artificial. Elige tu tirada, formula tu pregunta y deja que hablen los arcanos.">
+<meta name="description" content="Tarot gratis online con interpretación por inteligencia artificial y carta natal gratuita. Elige tu tirada, formula tu pregunta y deja que hablen los arcanos.">
+<link rel="canonical" href="https://arcana-lectura-tarot.netlify.app/">
+<meta property="og:type" content="website"><meta property="og:title" content="Arcana · Tarot gratis y carta natal"><meta property="og:description" content="Haz tu tirada de tarot gratis, con una lectura personal para tu pregunta, y descubre tu carta natal."><meta property="og:url" content="https://arcana-lectura-tarot.netlify.app/"><meta property="og:locale" content="es_ES">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -249,6 +251,7 @@ table.pl td.h{color:var(--muted);text-align:right;white-space:nowrap}
     <p class="legend" id="legend">Toca cualquier carta para ver su significado.</p>
     <div class="reading" id="reading"></div>
     <div class="actions" id="actions" style="display:none">
+      <button class="btn ghost" id="share">Compartir</button>
       <button class="btn ghost" id="copy">Copiar lectura</button>
       <button class="btn" id="again">Nueva lectura</button>
     </div>
@@ -293,7 +296,7 @@ table.pl td.h{color:var(--muted);text-align:right;white-space:nowrap}
     <p class="note" id="nNote"></p>
   </section>
 
-  <footer>Arcana es una herramienta de reflexión y entretenimiento. Las cartas no deciden por ti: ninguna lectura sustituye el consejo de un profesional en temas de salud, dinero o asuntos legales.</footer>
+  <footer><p style="margin-bottom:8px;font-style:normal"><a href="/cartas/" style="color:var(--gold2)">Significado de las 78 cartas del tarot</a></p>Arcana es una herramienta de reflexión y entretenimiento. Las cartas no deciden por ti: ninguna lectura sustituye el consejo de un profesional en temas de salud, dinero o asuntos legales.</footer>
 </div>
 
 <div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
@@ -637,7 +640,8 @@ function openCard(i){
    <div class="mean">
      <b>${p.rev?"INVERTIDA — LO QUE SALE AHORA":"AL DERECHO"}</b><p>${esc(p.rev?c.rev:c.up)}</p>
      <b>${p.rev?"AL DERECHO":"INVERTIDA"}</b><p style="opacity:.7">${esc(p.rev?c.up:c.rev)}</p>
-   </div>`;
+   </div>
+   <p style="margin-top:12px"><a href="/cartas/${cardSlug(c)}/" target="_blank" rel="noopener" style="color:var(--gold2)">Significado completo de ${esc(c.name)} →</a></p>`;
   $("modal").classList.add("on");
   $("mclose").onclick=closeModal;
 }
@@ -761,6 +765,63 @@ $("copy").onclick=async()=>{
   const cards=S.picked.map((p,i)=>`${S.spread.pos[i]}: ${p.card.name}${p.rev?" (invertida)":""}`).join("\n");
   const txt=`${S.spread.name}\n${S.question?"Pregunta: "+S.question+"\n":""}\n${cards}\n\n${S.text.replace(/^#+\s*/gm,"").replace(/\*\*/g,"")}`;
   try{await navigator.clipboard.writeText(txt);toast("Lectura copiada");}catch(e){toast("No se ha podido copiar");}
+};
+const SITE_HOST="arcana-lectura-tarot.netlify.app";
+function cardSlug(c){return c.name.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+function svgImg(svg){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);});}
+function wrapLines(ctx,text,maxW){const words=text.split(/\s+/),lines=[];let l="";for(const w of words){const t=l?l+" "+w:w;if(ctx.measureText(t).width>maxW&&l){lines.push(l);l=w;}else l=t;}if(l)lines.push(l);return lines;}
+function adviceText(){
+  const t=S.text||""; const m=t.match(/##\s*(?:Tu consejo|En resumen)[^\n]*\n+([\s\S]*?)(?=\n##|$)/i);
+  let a=(m?m[1]:t.split(/\n{2,}/).filter(x=>x.trim()&&!x.trim().startsWith("#"))[0]||"").replace(/\*\*/g,"").replace(/\*/g,"").replace(/\s+/g," ").trim();
+  if(a.length>230){a=a.slice(0,230);a=a.slice(0,a.lastIndexOf(" "))+"…";}
+  return a;
+}
+async function makeShareImage(){
+  try{await document.fonts.ready;}catch(e){}
+  const W=1080,H=1920,cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+  const g=x.createRadialGradient(W/2,-200,100,W/2,400,1500);g.addColorStop(0,"#2f2366");g.addColorStop(1,"#0b0a1a");x.fillStyle=g;x.fillRect(0,0,W,H);
+  for(let i=0;i<160;i++){x.globalAlpha=.15+Math.random()*.6;x.fillStyle="#f3e7c4";x.beginPath();x.arc(Math.random()*W,Math.random()*H,Math.random()*2.2,0,6.28);x.fill();}
+  x.globalAlpha=1;x.textAlign="center";
+  x.fillStyle="#f3d99b";x.font="600 74px Cinzel, serif";x.fillText("☾ ARCANA",W/2,170);
+  x.fillStyle="#d8b46a";x.font="600 34px Cinzel, serif";x.fillText(S.spread.name.toUpperCase(),W/2,240);
+  x.fillStyle="#efe6d2";x.font="italic 44px 'Cormorant Garamond', serif";
+  let y=320; wrapLines(x,S.question?`«${S.question}»`:"Lectura general",900).slice(0,3).forEach(l=>{x.fillText(l,W/2,y);y+=54;});
+  const n=S.picked.length, perRow=n<=3?n:n<=4?4:n<=8?Math.ceil(n/2):4, rows=Math.ceil(n/perRow);
+  const cw=Math.min(n===1?360:300,(960-(perRow-1)*30)/perRow), ch=cw*5/3, gap=30;
+  y+=30; let k=0;
+  for(let r=0;r<rows;r++){
+    const inRow=Math.min(perRow,n-k), rowW=inRow*cw+(inRow-1)*gap; let cx=(W-rowW)/2;
+    for(let j=0;j<inRow;j++,k++){
+      const p=S.picked[k]; try{const im=await svgImg(cardSVG(p.card));x.save();x.translate(cx+cw/2,y+ch/2);if(p.rev)x.rotate(Math.PI);x.shadowColor="rgba(0,0,0,.6)";x.shadowBlur=30;x.drawImage(im,-cw/2,-ch/2,cw,ch);x.restore();}catch(e){}
+      x.fillStyle="#f3d99b";x.font=`600 ${Math.max(20,Math.min(30,cw/9))}px Cinzel, serif`;
+      wrapLines(x,p.card.name+(p.rev?" (inv.)":""),cw+20).slice(0,2).forEach((l,li)=>x.fillText(l,cx+cw/2,y+ch+40+li*32));
+      cx+=cw+gap;
+    }
+    y+=ch+(rows>1?110:120);
+  }
+  const adv=adviceText();
+  if(adv && y<H-420){
+    x.strokeStyle="rgba(216,180,106,.6)";x.lineWidth=2;x.beginPath();x.moveTo(W/2-120,y);x.lineTo(W/2+120,y);x.stroke();y+=70;
+    x.fillStyle="#efe6d2";x.font="italic 42px 'Cormorant Garamond', serif";
+    wrapLines(x,adv,880).slice(0,Math.floor((H-260-y)/54)).forEach(l=>{x.fillText(l,W/2,y);y+=54;});
+  }
+  x.fillStyle="#a79fc0";x.font="34px 'Cormorant Garamond', serif";x.fillText("Haz tu tirada gratis en",W/2,H-150);
+  x.fillStyle="#f3d99b";x.font="600 38px Cinzel, serif";x.fillText(SITE_HOST,W/2,H-95);
+  return new Promise(res=>cv.toBlob(b=>res(b),"image/png"));
+}
+$("share").onclick=async()=>{
+  const btn=$("share");btn.disabled=true;btn.textContent="Creando imagen…";
+  let blob=null;try{blob=await makeShareImage();}catch(e){console.warn(e);}
+  btn.disabled=false;btn.textContent="Compartir";
+  if(!blob){toast("No se ha podido crear la imagen");return;}
+  const file=new File([blob],"mi-lectura-arcana.png",{type:"image/png"}), url=URL.createObjectURL(blob);
+  const canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  $("mbox").innerHTML=`<button class="close" id="mclose">×</button><h3>Tu lectura</h3>
+    <img src="${url}" alt="Imagen de tu lectura" style="width:100%;max-width:260px;border-radius:12px;margin:12px auto;display:block;box-shadow:0 10px 30px rgba(0,0,0,.6)">
+    <div class="actions" style="margin-top:10px">${canShare?'<button class="btn" id="doShare">Compartir</button>':""}<a class="btn ghost" id="doSave" href="${url}" download="mi-lectura-arcana.png" style="text-decoration:none">Guardar imagen</a></div>
+    <p class="note">Si no se descarga, mantén pulsada la imagen para guardarla y súbela a tus historias.</p>`;
+  $("modal").classList.add("on");$("mclose").onclick=closeModal;
+  if(canShare)$("doShare").onclick=async()=>{try{await navigator.share({files:[file],title:"Mi lectura de tarot",text:"Mira lo que me han dicho las cartas 🔮 Haz tu tirada gratis en https://"+SITE_HOST});}catch(e){}};
 };
 $("again").onclick=()=>{$("q").value="";show("inicio");};
 $("goHome").onclick=()=>show("inicio");
